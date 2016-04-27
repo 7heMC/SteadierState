@@ -52,7 +52,7 @@ REM Set up and test logging
 REM
 rd %logdir% /q /s  2>nul
 md %logdir%\test
-if exist %logdir%\test ((rd %logdir%\test /q /s) & (goto :canlog))
+if exist %logdir%\test ((rd %logdir%\test /q /s)&(goto :canlog))
 echo.
 echo I can't seem to delete the old logs; continuing anyway.
 echo.
@@ -91,13 +91,13 @@ echo Type "y"  (without the quotes) to set up a USB stick.  Enter anything
 echo else to NOT create a USB stick, or "end" to end this program.
 set /p usbresp=What's your answer? 
 echo.
-if a%usbresp%==aend ((echo.) & (echo Exiting as requested.) & (goto :done))
+if a%usbresp%==aend ((echo.)&(echo Exiting as requested.)&(goto :done))
 if not a%usbresp%==ay goto :nousbstick
 echo.
 echo Okay, what is that USB stick's drive letter?
 echo Enter its drive letter -- just the letter, don't
 set /p usbdriveletter=add a colon (":") after it -- and press Enter.
-if a%usbdriveletter%==aend ((echo.) & (echo Exiting as requested.) & (goto :done))
+if a%usbdriveletter%==aend ((echo.)&(echo Exiting as requested.)&(goto :done))
 echo.
 if not exist %usbdriveletter%:\ ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo.)&(echo There doesn't seem to be a USB stick at %usbdriveletter%:.  Let's try again.)&(echo.)&(goto :usbquestion))
 REM
@@ -149,7 +149,7 @@ echo CD or use in a virtual machine environment?  This will be useful
 echo in situations where you don't have a USB stick or perhaps one 
 echo might not work.  To create the ISO, please respond "y" and Enter.
 set /p isoresp=Type y to make the ISO, end to exit, anything else to skip making the ISO?
-if a%isoresp%==aend ((echo.) & (echo Exiting as requested.) & (goto :done))
+if a%isoresp%==aend ((echo.)&(echo Exiting as requested.)&(goto :done))
 if not a%isoresp%==ay goto :noiso
 set makeiso=true
 echo.
@@ -181,13 +181,13 @@ echo Question 3: What Version of Windows?
 echo.
 echo Next, what version of Windows will you be using?
 echo SteadierState currently only supports Windows 7 and Windows 10.
-echo Please enter just the number.
-set /p osresp=Please type your response and press Enter.
-if a%osresp%==aend ((echo.) & (echo Exiting as requested.) & (goto :done))
-if a%osresp% == a7 ((if not exist %waikbase% goto :nowaik)&(goto :askarch)
+echo Please enter just the number and press Enter.
+set /p osresp=Your response?
+if a%osresp%==aend ((echo.)&(echo Exiting as requested.)&(goto :done))
+if a%osresp% == a7 ((if not exist "%waikbase%" goto :nowaik)&(goto :askarch)
 if a%osresp% == a8 goto :notsupported
 if a%osresp% == a8.1 goto :notsupported
-if a%osresp% == a10 ((if not exist %adkbase% goto :noadk)&(goto :askarch))
+if a%osresp% == a10 ((if not exist "%adkbase%" goto :noadk)&(goto :askarch))
 echo.
 echo -------- ERROR -----------
 echo.
