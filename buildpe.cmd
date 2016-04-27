@@ -21,7 +21,6 @@ REM Needs the WAIK or ADK installed in its default location
 REM If that's an issue, change the next couple of lines to point
 REM to the top level folder in wherever you installed
 REM the WAIK/ADK.
-
 set waikase=C:\Program Files\Windows AIK\Tools
 set adkbase=C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit
 set makeiso=true
@@ -30,11 +29,9 @@ set makeusb=true
 set madeusb=
 set usbdriveletter=none
 set logdir=C:\windows\logs\buildpelogs
-
 REM
 REM Check that we're running as an admin
 REM
-
 del temp.txt 2> nul
 whoami /groups |find /c "High Mandatory">temp.txt
 set total=
@@ -221,9 +218,7 @@ echo Sorry, that didn't match either "32" or "64."
 echo.
 goto :askarch
 
-
 :srsfiles
-
 echo.
 echo =========================================================
 echo Question 5: Where are the Steadier State files?
@@ -696,7 +691,7 @@ goto :badend
 echo.
 echo Buildpe failed and terminated for some reason.  If you'd like to look
 echo further into what might have failed, back up the folder
-echo "%logdir% and the files in it and examine them for clues
+echo %logdir% and the files in it and examine them for clues
 echo about what went wrong.  Cleaning up temporary files...
 echo.
 if a%osresp% == a7 (
