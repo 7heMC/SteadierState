@@ -184,7 +184,7 @@ echo SteadierState currently only supports Windows 7 and Windows 10.
 echo Please enter just the number and press Enter.
 set /p osresp=Your response?
 if a%osresp%==aend ((echo.)&(echo Exiting as requested.)&(goto :done))
-if a%osresp% == a7 ((if not exist "%waikbase%" goto :nowaik)&(goto :askarch)
+if a%osresp% == a7 ((if not exist "%waikbase%" goto :nowaik)&(goto :askarch))
 if a%osresp% == a8 goto :notsupported
 if a%osresp% == a8.1 goto :notsupported
 if a%osresp% == a10 ((if not exist "%adkbase%" goto :noadk)&(goto :askarch))
@@ -206,7 +206,7 @@ echo.
 echo Next, will you be putting this on a 32-bit or 64-bit
 echo system?  Please enter either "32" or "64" and press Enter.
 set /p archresp=Your response?
-if a%archresp%==aend ((echo.) & (echo Exiting as requested.) & (goto :done))
+if a%archresp%==aend ((echo.)&(echo Exiting as requested.)&(goto :done))
 set arch=nothing
 set len=48
 if a%archresp% == a64 ((set arch=amd64)&(set len=64)& (goto :srsfiles))
@@ -230,7 +230,7 @@ echo folder name here and press Enter; again, to stop this program
 echo just type "end" and press Enter:
 echo.
 set /p sourceresp=Your response (folder name for Steadier State files)? 
-if a%sourceresp%==aend ((echo Exiting at your request.)&(echo.)& (goto :done))
+if a%sourceresp%==aend ((echo Exiting at your request.)&(echo.)&(goto :done))
 echo.
 echo Checking for the files in folder "%sourceresp%"...
 if not exist %sourceresp%\rollback.cmd ((echo rollback.cmd not found in %sourceresp%.)&(goto :srsfiles))
@@ -283,7 +283,7 @@ echo Please press "y" and Enter to confirm that you want to
 set /p confirmresp=do this, or anything else and Enter to stop.
 echo.
 if not a%confirmresp%==ay goto :done
-if a%confirmresp%==aend ((echo.) & (echo Exiting as requested.) & (goto :done))
+if a%confirmresp%==aend ((echo.)&(echo Exiting as requested.)&(goto :done))
 echo.
 echo Buildpe started.  This may take about five to ten minutes in total.
 echo.
@@ -331,15 +331,15 @@ REM
 if a%osresp% == a7 (
 echo Mounting Winpe.wim >>%logdir%\startlog.txt
 imagex /mountrw %fname%\winpe.wim 1 %fname%\mount  >%logdir%\03mount.txt
-set imagex1rc=%errorlevel%
-if %imagex1rc%==0 goto :mountok
+set mountrc=%errorlevel%
+if %mountrc%==0 goto :mountok
 echo.
 echo ********** ERROR:  Imagex mount attempt failed ******************
 ) else (
 echo Mounting boot.wim >>%logdir%\startlog.txt
 Dism /Mount-Image /ImageFile:%fname%\media\sources\boot.wim /index:1 /MountDir:%fname%\mount  >%logdir%\03mount.txt
-set dism1rc=%errorlevel%
-if %dism1rc%==0 goto :mountok
+set mountrc=%errorlevel%
+if %mountrc%==0 goto :mountok
 echo.
 echo ********** ERROR:  Dism mount attempt failed ******************
 )
@@ -403,14 +403,14 @@ REM Unmount, we're done
 REM
 if a%osresp% == a7 (
 imagex /unmount %fname%\mount /commit >%logdir%\05unmount.txt
-set imagex2rc=%errorlevel%
-if %imagex2rc%==0 goto :unmountok
+set unmountrc=%errorlevel%
+if %unmountrc%==0 goto :unmountok
 echo.
 echo ********** ERROR:  Imagex unmount attempt failed ******************
 ) else (
 Dism /Unmount-Image /MountDir:%fname%\mount /commit >%logdir%\05unmount.txt
-set dism2rc=%errorlevel%
-if %dism2rc%==0 goto :unmountok
+set unmountrc=%errorlevel%
+if %unmountrc%==0 goto :unmountok
 echo.
 echo ********** ERROR:  Dism unmount attempt failed ******************
 )
@@ -486,7 +486,7 @@ goto :donecreatingusb
 REM
 REM Analyzing first diskpart results
 REM 
-for /f "tokens=1-4" %%i in (%logdir%\diskpart1out.txt) do (if %%i%%k==Volume%usbdriveletter% ((set volwewant=%%j) & (set foundvolume=true)))
+for /f "tokens=1-4" %%i in (%logdir%\diskpart1out.txt) do (if %%i%%k==Volume%usbdriveletter% ((set volwewant=%%j)&(set foundvolume=true)))
 if %foundvolume%==false ((Echo unable to find drive %usbdriveletter%: in this Diskpart output:)&(type diskpartout.txt)&(echo Unable to set USB stick to "active" automatically.)&(echo Consult the documentation for instructions on doing it manually.)&(goto :badend))
 if %foundvolume%==true (echo Success; drive %usbdriveletter% is on volume number %volwewant%.) 
 REM
@@ -508,8 +508,8 @@ goto :donecreatingusb
 REM
 REM Second results
 REM
-for /f "tokens=1-3" %%i in (%logdir%\diskpart2out.txt) do ( if *Disk==%%i%%j ( (set disknum=%%k) & (set founddisk=true) ) )
-if %founddisk%==false ((Echo ERROR: failed to identify the volume's disk number, can't build the USB stick.  Consult the documentation or build an ISO and use a CD) & (echo.) & (goto :badend))
+for /f "tokens=1-3" %%i in (%logdir%\diskpart2out.txt) do ( if *Disk==%%i%%j ( (set disknum=%%k)&(set founddisk=true) ) )
+if %founddisk%==false ((Echo ERROR: failed to identify the volume's disk number, can't build the USB stick.  Consult the documentation or build an ISO and use a CD)&(echo.)&(goto :badend))
 echo Success; drive %usbdriveletter%: is on disk number %disknum%.
 echo Formatting the USB stick now.
 REM
@@ -649,10 +649,8 @@ set isofilespec=
 set nousbdrive=
 set confirmresp=
 set dl=
-set imagex1rc=
+set mountrc=
 set dism1rc
-set imagex2rc=
-set dism2rc
 set founddisk=
 set foundvolume=
 set volwewant=
