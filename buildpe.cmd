@@ -1,4 +1,5 @@
 @echo off
+setlocal ENABLEDELAYEDEXPANSION
 cls
 REM BUILDPE.CMD
 REM
@@ -333,20 +334,20 @@ REM Mount the folder
 REM
 if %osresp%==7 (
 echo Mounting Winpe.wim >>%logdir%\startlog.txt
-imagex /mountrw %fname%\winpe.wim 1 %fname%\mount  >%logdir%\03mount.txt
-set mountrc=%errorlevel%
-if %mountrc%==0 goto :mountok
+imagex /mountrw %fname%\winpe.wim 1 %fname%\mount >%logdir%\03mount.txt
+set mountrc=!errorlevel!
+echo !mountrc!==0 goto :mountok
 echo.
 echo ********** ERROR:  Imagex mount attempt failed ******************
 ) else (
 echo Mounting boot.wim >>%logdir%\startlog.txt
-Dism /Mount-Image /ImageFile:%fname%\media\sources\boot.wim /index:1 /MountDir:%fname%\mount  >%logdir%\03mount.txt
-set mountrc=%errorlevel%
-if %mountrc%==0 goto :mountok
+Dism /Mount-Image /ImageFile:%fname%\media\sources\boot.wim /index:1 /MountDir:%fname%\mount >%logdir%\03mount.txt
+set mountrc=!errorlevel!
+if !mountrc!==0 goto :mountok
 echo.
 echo ********** ERROR:  Dism mount attempt failed ******************
 )
-echo
+echo.
 echo The answer may simply be an incompletely dismounted previous run
 echo and in that case a simple reboot may clear things up. Here's the 
 echo output from the attempted mount:
@@ -367,7 +368,7 @@ echo WinPE space created with copype and WinPE's boot.wim mounted with Dism.
 echo boot.wim mounted, dism rc=%mountrc% >>%logdir%\startlog.txt
 )
 echo Creating and copying scripts to the USB stick and/or ISO image...
-md %fname%\mount\srs  >nul
+md %fname%\mount\srs >nul
 copy %sourceresp%\prepnewpc.cmd %fname%\mount /y >nul
 copy %sourceresp%\winpe.bmp %fname%\mount\windows\system32 /y >nul
 copy %sourceresp%\startnethd.cmd %fname%\mount /y >nul
@@ -378,11 +379,7 @@ copy %sourceresp%\winpe1.bmp %fname%\mount\srs /y >nul
 REM
 REM different WinPE to differentiate if you booted USB or hard disk
 REM
-if %osresp%==7 (
-copy "%WAIKBase%\%arch%\imagex.exe" "%fname%\mount\windows\system32" /y >>%logdir%\04srscopy.txt
-) else (
-copy "%ADKBase%\Deployment Tools\%arch%\DISM\dism.exe" "%fname%\mount\windows\system32" /y >>%logdir%\04srscopy.txt
-)
+if %osresp%==7 copy "%WAIKBase%\%arch%\imagex.exe" "%fname%\mount\windows\system32" /y >%logdir%\04srscopy.txt
 echo @cd \ >> "%fname%\mount\windows\system32\startnet.cmd"
 echo @cls  >> "%fname%\mount\windows\system32\startnet.cmd"
 echo @echo WinPE 3.0 booted from USB stick. >> "%fname%\mount\windows\system32\startnet.cmd"
@@ -405,18 +402,18 @@ REM Unmount, we're done
 REM
 if %osresp%==7 (
 imagex /unmount %fname%\mount /commit >%logdir%\05unmount.txt
-set unmountrc=%errorlevel%
-if %unmountrc%==0 goto :unmountok
+set unmountrc=!errorlevel!
+if !unmountrc!==0 goto :unmountok
 echo.
 echo ********** ERROR:  Imagex unmount attempt failed ******************
 ) else (
 Dism /Unmount-Image /MountDir:%fname%\mount /commit >%logdir%\05unmount.txt
-set unmountrc=%errorlevel%
-if %unmountrc%==0 goto :unmountok
+set unmountrc=!errorlevel!
+if !unmountrc!==0 goto :unmountok
 echo.
 echo ********** ERROR:  Dism unmount attempt failed ******************
 )
-echo
+echo.
 echo The answer may simply be an incompletely dismounted previous run
 echo and in that case a simple reboot may clear things up. Here's the 
 echo output from the attempted mount:
@@ -473,8 +470,8 @@ echo list volume >%logdir%\diskpart1script.txt
 echo exit >>%logdir%\diskpart1script.txt
 echo Running Diskpart to retrieve volume numbers, this may take a minute... 
 diskpart /s %logdir%\diskpart1script.txt >%logdir%\diskpart1out.txt
-set diskpart1rc=%errorlevel%
-if %diskpart1rc%==0 ((echo Diskpart phase 1 ended successfully, analyzing output.)&(goto :diskpart1ok))
+set diskpart1rc=!errorlevel!
+if !diskpart1rc!==0 ((echo Diskpart phase 1 ended successfully, analyzing output.)&(goto :diskpart1ok))
 echo Diskpart phase 1 failed, return code %diskpart1rc%.
 echo It's not really safe to continue -- I'd hate to blow away the wrong
 echo disk! -- so I'm stopping here and here's the Diskpart output -- there
@@ -489,21 +486,21 @@ REM
 REM Analyzing first diskpart results
 REM 
 for /f "tokens=1-4" %%i in (%logdir%\diskpart1out.txt) do (if %%i%%k==Volume%usbdriveletter% ((set volwewant=%%j)&(set foundvolume=true)))
-if %foundvolume%==false ((Echo unable to find drive %usbdriveletter%: in this Diskpart output:)&(type diskpart1out.txt)&(echo Unable to set USB stick to "active" automatically.)&(echo Consult the documentation for instructions on doing it manually.)&(goto :badend))
-if %foundvolume%==true (echo Success; drive %usbdriveletter% is on volume number %volwewant%.) 
+if !foundvolume!==false ((Echo unable to find drive %usbdriveletter%: in this Diskpart output:)&(type diskpart1out.txt)&(echo Unable to set USB stick to "active" automatically.)&(echo Consult the documentation for instructions on doing it manually.)&(goto :badend))
+if !foundvolume!==true (echo Success; drive %usbdriveletter% is on volume number %volwewant%.) 
 REM
 REM Now build script #2: given a volume number, what's the number of the disk that it is on?
 REM
-echo select volume %volwewant% >%logdir%\diskpart2script.txt
+echo select volume !volwewant! >%logdir%\diskpart2script.txt
 echo detail volume >>%logdir%\diskpart2script.txt
 echo exit >>%logdir%\diskpart2script.txt
 REM
 REM Run the script
 REM
 diskpart /s %logdir%\diskpart2script.txt >%logdir%\diskpart2out.txt
-set diskpart2rc=%errorlevel%
-if %diskpart2rc%==0 ((echo Diskpart phase 2 completed successfully. Now analyzing output.)&(goto :findusbdisk))
-echo Diskpart failed with return code %diskpart2rc%.  Unable to retrieve disk number for USB stick, USB prep failed.
+set diskpart2rc=!errorlevel!
+if !diskpart2rc!==0 ((echo Diskpart phase 2 completed successfully. Now analyzing output.)&(goto :findusbdisk))
+echo Diskpart failed with return code !diskpart2rc!.  Unable to retrieve disk number for USB stick, USB prep failed.
 goto :donecreatingusb
 
 :findusbdisk
@@ -511,13 +508,13 @@ REM
 REM Second results
 REM
 for /f "tokens=1-3" %%i in (%logdir%\diskpart2out.txt) do ( if *Disk==%%i%%j ( (set disknum=%%k)&(set founddisk=true) ) )
-if %founddisk%==false ((Echo ERROR: failed to identify the volume's disk number, can't build the USB stick.  Consult the documentation or build an ISO and use a CD)&(echo.)&(goto :badend))
-echo Success; drive %usbdriveletter%: is on disk number %disknum%.
+if !founddisk!==false ((Echo ERROR: failed to identify the volume's disk number, can't build the USB stick.  Consult the documentation or build an ISO and use a CD)&(echo.)&(goto :badend))
+echo Success; drive %usbdriveletter%: is on disk number !disknum!.
 echo Formatting the USB stick now.
 REM
 REM Write the final diskpart script now
 REM 
-echo select disk %disknum% >%logdir%\diskpart3script.txt
+echo select disk !disknum! >%logdir%\diskpart3script.txt
 echo clean >>%logdir%\diskpart3script.txt
 echo create partition primary >>%logdir%\diskpart3script.txt
 echo active >>%logdir%\diskpart3script.txt
@@ -528,9 +525,9 @@ REM
 REM Final Diskpart run
 REM
 diskpart /s %logdir%\diskpart3script.txt >%logdir%\diskpart3out.txt
-set diskpart3rc=%errorlevel%
-if %diskpart3rc%==0 ((echo Diskpart phase 3 completed successfully, USB stick formatted.)&(goto :copytousb))
-echo Diskpart failed with return code %diskpart3rc%.  USB stick build failed.
+set diskpart3rc=!errorlevel!
+if !diskpart3rc!==0 ((echo Diskpart phase 3 completed successfully, USB stick formatted.)&(goto :copytousb))
+echo Diskpart failed with return code !diskpart3rc!.  USB stick build failed.
 goto :donecreatingusb
 
 :copytousb
@@ -540,9 +537,9 @@ echo ISO file, using Robocopy.  It's a big file, so this may take a
 echo minute.
 echo.
 robocopy %fname%\ISO\ %dl% /e >%logdir%\05makeusb.txt
-set robocopyrc=%errorlevel%
-if %robocopyrc%==0 ((echo Robocopy completed successfully.)&(goto :usbok))
-echo Robocopy failed with return code %robocopyrc%.  USB stick NOT successfully created.
+set robocopyrc=!errorlevel!
+if !robocopyrc!==0 ((echo Robocopy completed successfully.)&(goto :usbok))
+echo Robocopy failed with return code !robocopyrc!.  USB stick NOT successfully created.
 set madeusb=false
 goto :donecreatingusb
 ) else (
@@ -551,9 +548,9 @@ echo ISO file, using MakeWinPEMedia.  It's a big file, so this may take a
 echo minute.
 echo.
 call MakeWinPEMedia /ufd /f %fname% %dl% >%logdir%\05makeusb.txt
-set makewinpeufdrc=%errorlevel%
-if %makewinpeufdrc%==0 ((echo MakeWinPEMedia completed successfully.)&(goto :usbok))
-echo MakeWinPEMedia failed with return code %makewinpeufdrc%.  USB stick NOT successfully created.
+set makewinpeufdrc=!errorlevel!
+if !makewinpeufdrc!==0 ((echo MakeWinPEMedia completed successfully.)&(goto :usbok))
+echo MakeWinPEMedia failed with return code !makewinpeufdrc!.  USB stick NOT successfully created.
 set madeusb=false
 goto :donecreatingusb
 )
@@ -572,28 +569,28 @@ REM WinPE workspace folder
 REM
 if %osresp%==7 (
 echo Creating ISO with oscdimg... >>%logdir%\startlog.txt
-oscdimg -h -n -betfsboot.com ISO %isofilespec%  >%logdir%\06makeiso.txt
-set oscdrc=%errorlevel%
-if %oscdrc%==0 ((echo OSCDIMG succeeded, return code %oscdrc%.)&(echo OSCDIMG complete with rc=%oscdrc% >>%logdir%\startlog.txt)&(set madeiso=true)&(goto :donewithiso))
+oscdimg -h -n -betfsboot.com ISO %isofilespec% >%logdir%\06makeiso.txt
+set oscdrc=!errorlevel!
+if !oscdrc!==0 ((echo OSCDIMG succeeded, return code !oscdrc!.)&(echo OSCDIMG complete with rc=!oscdrc! >>%logdir%\startlog.txt)&(set madeiso=true)&(goto :donewithiso))
 echo.
-echo Warning: OSCDIMG returned error code %oscdrc%, ISO may not have been
+echo Warning: OSCDIMG returned error code !oscdrc!, ISO may not have been
 echo written right.
 set madeiso=false
 goto :donewithiso
 ) else (
 echo Creating ISO with MakeWinPEMedia... >>%logdir%\startlog.txt
-call MakeWinPEMedia /iso /f %fname% %isofilespec%  >%logdir%\06makeiso.txt
-set makewinpeisorc=%errorlevel%
-if %makewinpeisorc%==0 ((echo MakeWinPEMedia succeeded, return code %makewinpeisorc%.)&(echo MakeWinPEMedia complete with rc=%makewinpeisorc% >>%logdir%\startlog.txt)&(set madeiso=true)&(goto :donewithiso))
+call MakeWinPEMedia /iso /f %fname% %isofilespec% >%logdir%\06makeiso.txt
+set makewinpeisorc=!errorlevel!
+if !makewinpeisorc!==0 ((echo MakeWinPEMedia succeeded, return code !makewinpeisorc!.)&(echo MakeWinPEMedia complete with rc=!makewinpeisorc! >>%logdir%\startlog.txt)&(set madeiso=true)&(goto :donewithiso))
 echo.
-echo Warning: MakeWinPEMedia returned error code %makewinpeisorc%, ISO may not have been
+echo Warning: MakeWinPEMedia returned error code !makewinpeisorc!, ISO may not have been
 echo written right.
 set madeiso=false
 goto :donewithiso
 )
 
 :donewithiso
-if %madeiso%%madeusb%==falsefalse ((echo Errors were encountered and BuildPE was unable to prepare an USB or create an ISO. Check %logdir%\startlog.txt for more details.)&(goto :badend)
+if %madeiso%%madeusb%==falsefalse ((echo Errors were encountered and BuildPE was unable to prepare an USB or create an ISO. Check %logdir%\startlog.txt for more details.)&(goto :badend))
 REM
 REM finished without problems
 REM
@@ -648,13 +645,13 @@ set arch=
 set len=
 set sourceresp=
 set fname=
-set volname
+set volname=
 set isofilespec=
 set nousbdrive=
 set confirmresp=
 set dl=
 set mountrc=
-set dism1rc
+set unmountrc=
 set founddisk=
 set foundvolume=
 set volwewant=
@@ -729,15 +726,13 @@ set arch=
 set len=
 set sourceresp=
 set fname=
-set volname
+set volname=
 set isofilespec=
 set nousbdrive=
 set confirmresp=
 set dl=
-set imagex1rc=
-set dism1rc
-set imagex2rc=
-set dism2rc
+set mountrc=
+set unmountrc=
 set founddisk=
 set foundvolume=
 set volwewant=
