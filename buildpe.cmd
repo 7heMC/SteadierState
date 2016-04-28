@@ -21,8 +21,8 @@ REM Needs the WAIK or ADK installed in its default location
 REM If that's an issue, change the next couple of lines to point
 REM to the top level folder in wherever you installed
 REM the WAIK/ADK.
-set waikase=C:\Program Files\Windows AIK\Tools
-set adkbase=C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit
+set "waikase=C:\Program Files\Windows AIK\Tools"
+set "adkbase=C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit"
 set makeiso=true
 set madeiso=
 set makeusb=true
@@ -91,13 +91,13 @@ echo Type "y"  (without the quotes) to set up a USB stick.  Enter anything
 echo else to NOT create a USB stick, or "end" to end this program.
 set /p usbresp=What's your answer? 
 echo.
-if a%usbresp%==aend ((echo.)&(echo Exiting as requested.)&(goto :done))
-if not a%usbresp%==ay goto :nousbstick
+if %usbresp%==end ((echo.)&(echo Exiting as requested.)&(goto :done))
+if not %usbresp%==y goto :nousbstick
 echo.
 echo Okay, what is that USB stick's drive letter?
 echo Enter its drive letter -- just the letter, don't
 set /p usbdriveletter=add a colon (":") after it -- and press Enter.
-if a%usbdriveletter%==aend ((echo.)&(echo Exiting as requested.)&(goto :done))
+if %usbdriveletter%==end ((echo.)&(echo Exiting as requested.)&(goto :done))
 echo.
 if not exist %usbdriveletter%:\ ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo.)&(echo There doesn't seem to be a USB stick at %usbdriveletter%:.  Let's try again.)&(echo.)&(goto :usbquestion))
 REM
@@ -149,8 +149,8 @@ echo CD or use in a virtual machine environment?  This will be useful
 echo in situations where you don't have a USB stick or perhaps one 
 echo might not work.  To create the ISO, please respond "y" and Enter.
 set /p isoresp=Type y to make the ISO, end to exit, anything else to skip making the ISO?
-if a%isoresp%==aend ((echo.)&(echo Exiting as requested.)&(goto :done))
-if not a%isoresp%==ay goto :noiso
+if %isoresp%==end ((echo.)&(echo Exiting as requested.)&(goto :done))
+if not %isoresp%==y goto :noiso
 set makeiso=true
 echo.
 echo Okay, I will create an ISO file in your Documents folder.
@@ -183,11 +183,11 @@ echo Next, what version of Windows will you be using?
 echo SteadierState currently only supports Windows 7 and Windows 10.
 echo Please enter just the number and press Enter.
 set /p osresp=Your response?
-if a%osresp%==aend ((echo.)&(echo Exiting as requested.)&(goto :done))
-if a%osresp% == a7 ((if not exist "%waikbase%" goto :nowaik)&(goto :askarch))
-if a%osresp% == a8 goto :notsupported
-if a%osresp% == a8.1 goto :notsupported
-if a%osresp% == a10 ((if not exist "%adkbase%" goto :noadk)&(goto :askarch))
+if %osresp%==end ((echo.)&(echo Exiting as requested.)&(goto :done))
+if %osresp%==7 ((if not exist "%waikbase%" goto :nowaik)&(goto :askarch))
+if %osresp%==8 goto :notsupported
+if %osresp%==8.1 goto :notsupported
+if %osresp%==10 ((if not exist "%adkbase%" goto :noadk)&(goto :askarch))
 echo.
 echo -------- ERROR -----------
 echo.
@@ -206,11 +206,11 @@ echo.
 echo Next, will you be putting this on a 32-bit or 64-bit
 echo system?  Please enter either "32" or "64" and press Enter.
 set /p archresp=Your response?
-if a%archresp%==aend ((echo.)&(echo Exiting as requested.)&(goto :done))
+if %archresp%==end ((echo.)&(echo Exiting as requested.)&(goto :done))
 set arch=nothing
 set len=48
-if a%archresp% == a64 ((set arch=amd64)&(set len=64)& (goto :srsfiles))
-if a%archresp% == a32 ((set arch=x86)&(set len=32) &(goto :srsfiles))
+if %archresp%==64 ((set arch=amd64)&(set len=64)& (goto :srsfiles))
+if %archresp%==32 ((set arch=x86)&(set len=32) &(goto :srsfiles))
 echo.
 echo -------- ERROR -----------
 echo.
@@ -230,7 +230,7 @@ echo folder name here and press Enter; again, to stop this program
 echo just type "end" and press Enter:
 echo.
 set /p sourceresp=Your response (folder name for Steadier State files)? 
-if a%sourceresp%==aend ((echo Exiting at your request.)&(echo.)&(goto :done))
+if %sourceresp%==end ((echo Exiting at your request.)&(echo.)&(goto :done))
 echo.
 echo Checking for the files in folder "%sourceresp%"...
 if not exist %sourceresp%\rollback.cmd ((echo rollback.cmd not found in %sourceresp%.)&(goto :srsfiles))
@@ -249,7 +249,11 @@ echo Architecture=%len% bit.
 echo Make a USB stick=%makeusb%
 if %makeusb%==true echo Drive for USB stick=%usbdriveletter%:
 echo Make an ISO file=%makeiso%
+if %osresp%==7 (
 echo WAIK installed:  verified
+) else (
+echo ADK installed:  verified
+)
 REM
 REM Set temp name of WinPE folder
 REM
@@ -263,13 +267,12 @@ if %makeiso%==true echo File name and location of ISO file=%isofilespec%
 echo Location of Steadier State command files=%sourceresp%
 set nousbdrive=true
 if %makeusb%==true set nousbdrive=false
-
 echo Windows Version=%osresp% >%logdir%\startlog.txt
 echo Architecture=%len% bit. >>%logdir%\startlog.txt
 echo Make a USB stick=%makeusb% >>%logdir%\startlog.txt
 if %makeusb%==true echo Drive for USB stick=%usbdriveletter%: >>%logdir%\startlog.txt
 echo Make an ISO file=%makeiso% >>%logdir%\startlog.txt
-if a%osresp% == a7 (
+if %osresp%==7 (
 echo WAIK installed:  verified >>%logdir%\startlog.txt
 ) else (
 echo ADK installed:  verified >>%logdir%\startlog.txt
@@ -282,8 +285,8 @@ echo.
 echo Please press "y" and Enter to confirm that you want to
 set /p confirmresp=do this, or anything else and Enter to stop.
 echo.
-if not a%confirmresp%==ay goto :done
-if a%confirmresp%==aend ((echo.)&(echo Exiting as requested.)&(goto :done))
+if not %confirmresp%==y goto :done
+if %confirmresp%==end ((echo.)&(echo Exiting as requested.)&(goto :done))
 echo.
 echo Buildpe started.  This may take about five to ten minutes in total.
 echo.
@@ -309,7 +312,7 @@ REM To work!  Create WinPE workspace
 REM add WAIK/ADK path stuff
 REM
 pushd
-if a%osresp% == a7 (
+if %osresp%==7 (
 echo Setting WAIK environment variables >>%logdir%\startlog.txt
 call "%WAIKBase%\PETools\pesetenv.cmd" >%logdir%\01setenv.txt
 ) else (
@@ -328,7 +331,7 @@ echo.
 REM
 REM Mount the folder
 REM
-if a%osresp% == a7 (
+if %osresp%==7 (
 echo Mounting Winpe.wim >>%logdir%\startlog.txt
 imagex /mountrw %fname%\winpe.wim 1 %fname%\mount  >%logdir%\03mount.txt
 set mountrc=%errorlevel%
@@ -354,15 +357,14 @@ echo.
 echo Exiting.
 goto :badend
 
-
 :mountok
 echo.
-if a%osresp% == a7 (
+if %osresp%==7 (
 echo WinPE space created with copype and WinPE's boot.wim mounted with ImageX.
-echo Winpe.wim mounted, imagex rc=%errorlevel% >>%logdir%\startlog.txt
+echo Winpe.wim mounted, imagex rc=%mountrc% >>%logdir%\startlog.txt
 ) else (
 echo WinPE space created with copype and WinPE's boot.wim mounted with Dism.
-echo boot.wim mounted, dism rc=%dismrc% >>%logdir%\startlog.txt
+echo boot.wim mounted, dism rc=%mountrc% >>%logdir%\startlog.txt
 )
 echo Creating and copying scripts to the USB stick and/or ISO image...
 md %fname%\mount\srs  >nul
@@ -376,7 +378,7 @@ copy %sourceresp%\winpe1.bmp %fname%\mount\srs /y >nul
 REM
 REM different WinPE to differentiate if you booted USB or hard disk
 REM
-if a%osresp% == a7 (
+if %osresp%==7 (
 copy "%WAIKBase%\%arch%\imagex.exe" "%fname%\mount\windows\system32" /y >>%logdir%\04srscopy.txt
 ) else (
 copy "%ADKBase%\Deployment Tools\%arch%\DISM\dism.exe" "%fname%\mount\windows\system32" /y >>%logdir%\04srscopy.txt
@@ -401,7 +403,7 @@ echo Copied Steadier State files. >>%logdir%\startlog.txt
 REM
 REM Unmount, we're done
 REM
-if a%osresp% == a7 (
+if %osresp%==7 (
 imagex /unmount %fname%\mount /commit >%logdir%\05unmount.txt
 set unmountrc=%errorlevel%
 if %unmountrc%==0 goto :unmountok
@@ -427,8 +429,8 @@ goto :badend
 
 :unmountok
 echo Successfully copied files and unmounted boot.wim.
-if a%osresp% == a7 (
-echo Unmounted winpe.wim, imagex rc=%imagexrc% >>%logdir%\startlog.txt
+if %osresp%==7 (
+echo Unmounted winpe.wim, imagex rc=%unmountrc% >>%logdir%\startlog.txt
 REM
 REM Install boot.wim
 REM
@@ -445,12 +447,12 @@ REM
 REM Time to make the USB drive
 REM 
 ) else (
-echo Unmounted boot.wim, Dism rc=%dismrc% >>%logdir%\startlog.txt
+echo Unmounted boot.wim, Dism rc=%unmountrc% >>%logdir%\startlog.txt
 )
 echo.
 if %makeusb%==false goto :donecreatingusb
 echo Starting to create USB stick. >>%logdir%\startlog.txt
-if a%osresp% == a7 (
+if %osresp%==7 (
 REM
 REM WIPE AND REBUILD USB STICK
 REM Sets up DISKPART to be able to create our USB stick.
@@ -470,7 +472,7 @@ REM
 echo list volume >%logdir%\diskpart1script.txt
 echo exit >>%logdir%\diskpart1script.txt
 echo Running Diskpart to retrieve volume numbers, this may take a minute... 
-diskpart /s %logdir%\diskpart1script.txt > %logdir%\diskpart1out.txt
+diskpart /s %logdir%\diskpart1script.txt >%logdir%\diskpart1out.txt
 set diskpart1rc=%errorlevel%
 if %diskpart1rc%==0 ((echo Diskpart phase 1 ended successfully, analyzing output.)&(goto :diskpart1ok))
 echo Diskpart phase 1 failed, return code %diskpart1rc%.
@@ -487,20 +489,20 @@ REM
 REM Analyzing first diskpart results
 REM 
 for /f "tokens=1-4" %%i in (%logdir%\diskpart1out.txt) do (if %%i%%k==Volume%usbdriveletter% ((set volwewant=%%j)&(set foundvolume=true)))
-if %foundvolume%==false ((Echo unable to find drive %usbdriveletter%: in this Diskpart output:)&(type diskpartout.txt)&(echo Unable to set USB stick to "active" automatically.)&(echo Consult the documentation for instructions on doing it manually.)&(goto :badend))
+if %foundvolume%==false ((Echo unable to find drive %usbdriveletter%: in this Diskpart output:)&(type diskpart1out.txt)&(echo Unable to set USB stick to "active" automatically.)&(echo Consult the documentation for instructions on doing it manually.)&(goto :badend))
 if %foundvolume%==true (echo Success; drive %usbdriveletter% is on volume number %volwewant%.) 
 REM
 REM Now build script #2: given a volume number, what's the number of the disk that it is on?
 REM
-echo select volume %volwewant% > %logdir%\diskpart2script.txt
-echo detail volume >> %logdir%\diskpart2script.txt
-echo exit >> %logdir%\diskpart2script.txt
+echo select volume %volwewant% >%logdir%\diskpart2script.txt
+echo detail volume >>%logdir%\diskpart2script.txt
+echo exit >>%logdir%\diskpart2script.txt
 REM
 REM Run the script
 REM
-diskpart /s %logdir%\diskpart2script.txt > %logdir%\diskpart2out.txt
+diskpart /s %logdir%\diskpart2script.txt >%logdir%\diskpart2out.txt
 set diskpart2rc=%errorlevel%
-if a%diskpart2rc%==a0 ((echo Diskpart phase 2 completed successfully. Now analyzing output.)&(goto :findusbdisk))
+if %diskpart2rc%==0 ((echo Diskpart phase 2 completed successfully. Now analyzing output.)&(goto :findusbdisk))
 echo Diskpart failed with return code %diskpart2rc%.  Unable to retrieve disk number for USB stick, USB prep failed.
 goto :donecreatingusb
 
@@ -515,19 +517,19 @@ echo Formatting the USB stick now.
 REM
 REM Write the final diskpart script now
 REM 
-echo select disk %disknum% > %logdir%\diskpart3script.txt
-echo clean >> %logdir%\diskpart3script.txt
-echo create partition primary >> %logdir%\diskpart3script.txt
-echo active >> %logdir%\diskpart3script.txt
-echo format fs=fat32 quick label=%volname% >> %logdir%\diskpart3script.txt
-echo assign letter=%usbdriveletter% >> %logdir%\diskpart3script.txt
-echo exit >> %logdir%\diskpart3script.txt
+echo select disk %disknum% >%logdir%\diskpart3script.txt
+echo clean >>%logdir%\diskpart3script.txt
+echo create partition primary >>%logdir%\diskpart3script.txt
+echo active >>%logdir%\diskpart3script.txt
+echo format fs=fat32 quick label=%volname% >>%logdir%\diskpart3script.txt
+echo assign letter=%usbdriveletter% >>%logdir%\diskpart3script.txt
+echo exit >>%logdir%\diskpart3script.txt
 REM
 REM Final Diskpart run
 REM
-diskpart /s %logdir%\diskpart3script.txt > %logdir%\diskpart3out.txt
+diskpart /s %logdir%\diskpart3script.txt >%logdir%\diskpart3out.txt
 set diskpart3rc=%errorlevel%
-if a%diskpart3rc%==a0 ((echo Diskpart phase 3 completed successfully, USB stick formatted.)&(goto :copytousb))
+if %diskpart3rc%==0 ((echo Diskpart phase 3 completed successfully, USB stick formatted.)&(goto :copytousb))
 echo Diskpart failed with return code %diskpart3rc%.  USB stick build failed.
 goto :donecreatingusb
 
@@ -537,9 +539,9 @@ echo Next, I'll copy the WinPE source to the USB stick and/or
 echo ISO file, using Robocopy.  It's a big file, so this may take a
 echo minute.
 echo.
-robocopy %fname%\ISO\ %dl% /e > %logdir%\05robocopyout.txt
+robocopy %fname%\ISO\ %dl% /e >%logdir%\05makeusb.txt
 set robocopyrc=%errorlevel%
-if a%robocopyrc%==a1 ((echo Robocopy completed successfully.)&(goto :usbok))
+if %robocopyrc%==0 ((echo Robocopy completed successfully.)&(goto :usbok))
 echo Robocopy failed with return code %robocopyrc%.  USB stick NOT successfully created.
 set madeusb=false
 goto :donecreatingusb
@@ -548,7 +550,7 @@ echo I'll copy the WinPE source to the USB stick and/or
 echo ISO file, using MakeWinPEMedia.  It's a big file, so this may take a
 echo minute.
 echo.
-call MakeWinPEMedia /ufd /f %fname% %dl% > %logdir%\05makewinpemediaout.txt
+call MakeWinPEMedia /ufd /f %fname% %dl% >%logdir%\05makeusb.txt
 set makewinpeufdrc=%errorlevel%
 if %makewinpeufdrc%==0 ((echo MakeWinPEMedia completed successfully.)&(goto :usbok))
 echo MakeWinPEMedia failed with return code %makewinpeufdrc%.  USB stick NOT successfully created.
@@ -568,9 +570,9 @@ REM
 REM this should work, as we should still be in the
 REM WinPE workspace folder
 REM
-if a%osresp% == a7 (
+if %osresp%==7 (
 echo Creating ISO with oscdimg... >>%logdir%\startlog.txt
-oscdimg -h -n -betfsboot.com ISO %isofilespec%  >%logdir%\06oscdimgoutput.txt
+oscdimg -h -n -betfsboot.com ISO %isofilespec%  >%logdir%\06makeiso.txt
 set oscdrc=%errorlevel%
 if %oscdrc%==0 ((echo OSCDIMG succeeded, return code %oscdrc%.)&(echo OSCDIMG complete with rc=%oscdrc% >>%logdir%\startlog.txt)&(set madeiso=true)&(goto :donewithiso))
 echo.
@@ -580,7 +582,7 @@ set madeiso=false
 goto :donewithiso
 ) else (
 echo Creating ISO with MakeWinPEMedia... >>%logdir%\startlog.txt
-call MakeWinPEMedia /iso /f %fname% %isofilespec%  >%logdir%\06oscdimgoutput.txt
+call MakeWinPEMedia /iso /f %fname% %isofilespec%  >%logdir%\06makeiso.txt
 set makewinpeisorc=%errorlevel%
 if %makewinpeisorc%==0 ((echo MakeWinPEMedia succeeded, return code %makewinpeisorc%.)&(echo MakeWinPEMedia complete with rc=%makewinpeisorc% >>%logdir%\startlog.txt)&(set madeiso=true)&(goto :donewithiso))
 echo.
@@ -605,7 +607,7 @@ REM
 REM get rid of old WinPE workspace
 REM
 echo Deleting WinPE workspace. >>%logdir%\startlog.txt
-if not a%fname%==a rd %fname% /s /q 2>nul
+if not '%fname%'=='' rd %fname% /s /q 2>nul
 popd
 echo.
 echo Done.  Now that you have a USB stick and/or an ISO, you can use them
@@ -621,10 +623,12 @@ echo "prepnewpc."  There are more detailed instructions for using those
 echo command files in the documentation, or they also include some built-
 echo in documentation.
 echo.
-if a%madeiso%==atrue echo Your ISO is in %isofilespec%.
+if %madeiso%==true echo Your ISO is in %isofilespec%.
 echo.
 echo Thanks for trying Steadier State, I hope it's useful.
 echo -- Mark Minasi help@minasi.com www.steadierstate.com
+echo This copy of SteadierState has been modified and the source
+echo can be found at https://github.com/7heMC/SteadierState
 echo.
 set waikase=
 set adkbase=
@@ -683,7 +687,7 @@ echo I'm sorry, but Windows 8/8.1 is not currently supported in this
 echo version of SteadierState. Only Windows 7 and Windows 10 are currently
 echo supported. Selecting 10 may work for Windows 8 or 8.1.
 echo However, this is untested. Exiting...
-goto :badend
+goto :done
 
 :badend
 echo.
@@ -692,7 +696,7 @@ echo further into what might have failed, back up the folder
 echo %logdir% and the files in it and examine them for clues
 echo about what went wrong.  Cleaning up temporary files...
 echo.
-if a%osresp% == a7 (
+if %osresp%==7 (
 imagex /unmount mount > %logdir%\badendimagexunmount.txt
 ) else (
 Dism /Unmount-Image /MountDir:%fname%\mount /discard > %logdir%\badenddismunmount.txt
@@ -706,7 +710,7 @@ REM
 REM get rid of old WinPE workspace
 REM
 echo Deleting WinPE workspace. >>%logdir%\startlog.txt
-if not a%fname%==a rd %fname% /s /q 2>nul
+if not '%fname%'=='' rd %fname% /s /q 2>nul
 set waikase=
 set adkbase=
 set makeiso=
