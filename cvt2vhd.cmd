@@ -1,4 +1,5 @@
 @echo off
+setlocal ENABLEDELAYEDEXPANSION
 REM
 REM invoke this cvt2vhd <letter of drive we're imaging:> <letter of drive we're using to save WIM and VHD:> <size of VHD in gigabytes>
 REM if you add "skipwim," it'll skip imaging (which takes time)
