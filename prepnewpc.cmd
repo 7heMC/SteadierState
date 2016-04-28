@@ -1,4 +1,5 @@
 @echo off
+setlocal ENABLEDELAYEDEXPANSION
 REM
 REM Check that we're running from the root of the boot device
 REM Use the pseudo-variable ~d0 to get the job done
