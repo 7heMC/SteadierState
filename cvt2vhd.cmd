@@ -3,17 +3,17 @@ REM
 REM invoke this cvt2vhd <letter of drive we're imaging:> <letter of drive we're using to save WIM and VHD:> <size of VHD in gigabytes>
 REM if you add "skipwim," it'll skip imaging (which takes time)
 REM
-REM exdrive = external drive letter we'll write the wim and then vhd to (should include colon)
 REM imgdrive = local drive with Windows folder on it that we'll be imaging (does not sysprep, that's up to you) (should include colon)
+REM exdrive = external drive letter we'll write the wim and then vhd to (should include colon)
 REM vhdsize = size of the image.vhd file (an expandable file) in megabytes... we'll add 000 to make it gigabytes
 REM tdrive = temporary drive letter to use when creating and attaching the VHD (should include colon)
-set exdrive=%2
+REM
 set imgdrive=%1
+set exdrive=%2
 set vhdsize=%3
 set skipwim=false
-if a%4==askipwim set skipwim=true
-if a%exdrive%%imgdrive%%vhdsize%==a (goto :background)
-
+if %4==skipwim set skipwim=true
+if '%exdrive%%imgdrive%%vhdsize%'=='' (goto :background)
 REM
 REM Find an available drive letter for a temporary drive
 REM
@@ -32,23 +32,28 @@ echo not find one between Q: and W:.  I can't do the job
 echo without a free drive letter, so I've got to stop.
 echo.
 goto :end
-:foundtdrive
 
+:foundtdrive
 REM 
 REM check for inputs on everything
 REM
-if a%exdrive%==a (goto :needinputs)
-if a%imgdrive%==a (goto :needinputs)
-if a%vhdsize%==a (goto :needinputs)
+if '%exdrive%'=='' (goto :needinputs)
+if '%imgdrive%'=='' (goto :needinputs)
+if '%vhdsize%'=='' (goto :needinputs)
 REM
+REM osversion = version of Windows PE
 REM Check the drives exist
-REM 
+REM
 if not exist %exdrive%\ ((echo.) & (echo Drive %exdrive% seems not to exist.) & (goto :end))
 if not exist %imgdrive%\ ((echo.) & (echo Drive %imgdrive% seems not to exist.) & (goto :end))
 if exist %exdrive%\image.vhd ((echo.)&(echo %exdrive%\image.vhd already exists.) & (goto :end))
-if not exist \windows\system32\imagex.exe ((echo.)&(echo ImageX missing... please only run this from a system booted from & echo a Steadier State USB stick/CD.) & (goto :end))
+if exist \windows\system32\imagex.exe ((echo.)&(set osversion=7)&(goto :drivesok)
+if exist \windows\system32\Dism.exe ((echo.)&(set osversion=10)&(if not exist %exdrive%\scratch mkdir %exdrive%\scratch)&(goto :drivesok)
+echo ImageX and Dism missing... please only run this from a system booted from
+echo a Steadier State USB stick/CD.
+goto :end
 
-REM 
+:drivesok
 CLS
 echo.
 echo                      Convert PC to VHD Routine
@@ -66,112 +71,112 @@ echo a drive -- networked, external, or whatever -- with enough
 echo space to hold your Windows box's C: drive on it.
 echo.
 echo You've said that:
-echo   the OS you want convert to VHD is %imgdrive%.
+echo   the OS you want to convert to VHD is %imgdrive%.
 echo   the drive you want to create the image/VHD on is %exdrive%.
 echo   you want the resulting "image.vhd" file to be %vhdsize% gigabytes.
+echo I have noticed that you are preparing a Windows %osversion% system.
 echo Additionally, I will use drive %tdrive%: as a temporary drive letter.
 echo.
-
 REM
 REM Ready to get to work
 REM
-
-
-if a%skipwim%==atrue goto :makevhd
-
+if %skipwim%==true goto :makevhd
 echo =========================================
 echo Step 1: Capture Windows drive as an image
 echo =========================================
-
 echo Imaging %imgdrive% to %exdrive%, command is: 
-
+if %osversion%==7 (
 echo imagex /capture %imgdrive% %exdrive%\image.wim "Intermediate image"  /verify
-
 imagex /capture %imgdrive% %exdrive%\image.wim "Intermediate image" /verify
-
-set imagexrc=%errorlevel%
-
-if not %imagexrc%==0 ((echo ImageX failed with error code %imagexrc%, exiting.) & (goto :eof))
+set capturerc=!errorlevel!
+if not !capturerc!==0 ((echo ImageX failed with error code %imagexrc%, exiting.)&(goto :eof))
+) else (
+echo Dism /Capture-Image /ImageFile:%exdrive%\image.wim /CaptureDir:%imgdrive%  /ScratchDir:%exdrive%\scratch /Name:"Intermediate image"  /Verify
+Dism /Capture-Image /ImageFile:%exdrive%\image.wim /CaptureDir:%imgdrive%  /ScratchDir:%exdrive%\scratch /Name:"Intermediate image"  /Verify
+set capturerc=!errorlevel!
+if not !capturerc!==0 ((echo Dism failed with error code !capturerc!, exiting.)&(goto :eof))
+)
 echo.
 echo Step 1 successful.
 echo.
+
 :makevhd
 echo ====================================================== 
 echo Step 2: create an empty VHD file to receive the image.
 echo ======================================================
 echo.
-
-echo create vdisk file="%exdrive%\image.vhd" type=expandable maximum=%vhdsize%000 >dps1.txt
-echo select vdisk file="%exdrive%\image.vhd" >>dps1.txt
-echo attach vdisk >>dps1.txt
-echo cre par pri >>dps1.txt
-echo format fs=ntfs quick label="Windows" >>dps1.txt
-echo assign letter=%tdrive% >>dps1.txt
-echo exit >>dps1.txt
-rem
+echo create vdisk file="%exdrive%\image.vhd" type=expandable maximum=%vhdsize%000 >diskpart1script.txt
+echo select vdisk file="%exdrive%\image.vhd" >>diskpart1script.txt
+echo attach vdisk >>diskpart1script.txt
+echo create partition primary >>diskpart1script.txt
+echo format fs=ntfs quick label="Windows_SrS" >>diskpart1script.txt
+echo assign letter=%tdrive% >>diskpart1script.txt
+echo exit >>diskpart1script.txt
 echo We'll issue these commands to DISKPART:
 echo.
-type dps1.txt
-diskpart /s dps1.txt
-set dprc=%errorlevel%
-if %dprc%==0 ((echo Diskpart successful.) & (goto :fillvhd))
+type diskpart1script.txt
+diskpart /s diskpart1script.txt
+set diskpart1rc=%errorlevel%
+if %diskpart1rc%==0 ((echo.)&(echo Step 2 successful.) & (goto :fillvhd))
 echo.
-echo Diskpart failure.  Return code=%dprc%.  CVT2VHD unable to finish, exiting.
+echo Diskpart failure.  Return code=%diskpart1rc%.  CVT2VHD unable to finish, exiting.
 goto :eof
+
 :fillvhd
 echo.
 echo =============================
 echo Step 3: Apply image to VHD
 echo =============================
 echo.
-rem
-rem now to VHD
-rem
+REM
+REM now to VHD
+REM
 echo we'll run this command:
+if %osversion%==7 (
 echo imagex /apply %exdrive%\image.wim 1 %tdrive%: /verify
 imagex /apply %exdrive%\image.wim 1 %tdrive%: /verify
-
-set imagexrc=%errorlevel%
-
-if not %imagexrc%==0 ((echo ImageX failed with error code %imagexrc%, exiting.) & (goto :eof))
+set applyrc=!errorlevel!
+if not !applyrc!==0 ((echo ImageX failed with error code !applyrc!, exiting.)&(goto :eof))
+) else (
+echo Dism /Apply-Image /ImageFile:%exdrive%\image.wim /ApplyDir:%tdrive% /ScratchDir:%exdrive%\scratch /Index:1 /Verify
+Dism /Apply-Image /ImageFile:%exdrive%\image.wim /ApplyDir:%tdrive%: /ScratchDir:%exdrive%\scratch /Index:1 /Verify
+set applyrc=!errorlevel!
+if not !applyrc!==0 ((echo Dism failed with error code !applyrc!, exiting.)&(goto :eof))
+)
 echo.
-echo ImageX /apply succeeded.
-:freevhd
+echo Step 3 successful.
 echo.
 echo ====================================
 echo Step 4: Detach and close VHD file
 echo ====================================
-rem
-rem now detach image.vhd and free up the temp drive letter
-rem
+REM
+REM now detach image.vhd and free up the temp drive letter
+REM
 echo Finally, unmount the VHD:
-
-echo select vdisk file="%exdrive%\image.vhd" >dps1.txt
-echo detach vdisk >>dps1.txt
-echo exit >>dps1.txt
-
+echo select vdisk file="%exdrive%\image.vhd" >diskpart2script.txt
+echo detach vdisk >>diskpart2script.txt
+echo exit >>diskpart2script.txt
 echo.
 echo We'll execute these DISKPART commands:
-echo dps1.txt:
+echo diskpart2script.txt:
 echo.
-type dps1.txt
-diskpart /s dps1.txt
+type diskpart2script.txt
+diskpart /s diskpart2script.txt
 echo.
 echo Done.
-set dprc=%errorlevel%
-if %dprc%==0 ((echo Diskpart successful.) & (goto :happyend))
+set diskpart2rc=%errorlevel%
+if %diskpart2rc%==0 ((echo Diskpart successful.)&(goto :happyend))
 echo.
-echo Diskpart failure detaching VHD.  Return code=%dprc%.  
+echo Diskpart failure detaching VHD.  Return code=%diskpart2rc%.  
 echo Check there's enough space on drive %imgdrive% and try again.
 echo CVT2VHD unable to finish, exiting.
 goto :eof
 
 :happyend
-rem
-rem and now we're done, it's in image.vhd
-rem
-
-Echo Completed creating your image.vhd.  To deploy this to a PC, you should:
+REM
+REM and now we're done, it's in image.vhd
+REM
+echo Completed creating your image.vhd.  To deploy this to a PC, you should:
 echo.
 echo  1) Boot the target PC with your Steadier State USB stick/CD.
 echo  2) Run prepnewpc on the target PC (which will wipe the hard drive of that
@@ -190,6 +195,8 @@ echo     "Roll Back Windows."
 echo.
 echo Thanks for using Steadier State, I hope it's of value.
 echo -- Mark Minasi help@minasi.com www.steadierstate.com
+echo This copy of SteadierState has been modified and the source
+echo can be found at https://github.com/7heMC/SteadierState
 goto :eof
 
 :background
@@ -234,8 +241,10 @@ echo case.  (80 GB x 2.5 = 200 GB.)
 echo.
 echo Thanks for using Steadier State, I hope it's of value.
 echo -- Mark Minasi help@minasi.com www.steadierstate.com
-
+echo This copy of SteadierState has been modified and the source
+echo can be found at https://github.com/7heMC/SteadierState
 goto :end
+
 :needinputs
 echo.
 echo This script needs three inputs: the drive letter you want 
@@ -256,4 +265,7 @@ echo physical volume that has at least 2.5x80 or 200 GB free.
 echo.
 echo Thanks for using Steadier State, I hope it's useful.
 echo -- Mark Minasi help@minasi.com www.steadierstate.com
+echo This copy of SteadierState has been modified and the source
+echo can be found at https://github.com/7heMC/SteadierState
+
 :end
