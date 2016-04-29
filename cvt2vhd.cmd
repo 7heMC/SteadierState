@@ -105,8 +105,10 @@ echo Do you want to skip the step of creating a wim file. This step is
 echo recommended and will be processed unless you type 'skip' below.
 set /p skipwim=What is your response?
 if '%skipwim%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :end))
-if '%skipwim%'=='skip' ((echo.)&(echo You have chosen not to create a wim file.)&(set skipwim=true)&(goto :end))
+if '%skipwim%'=='skip' ((echo.)&(echo You have chosen not to create a wim file.)&(set skipwim=true)&(goto :findtdrive))
 set skipwim=false
+
+:findtdrive
 REM
 REM tdrive = temporary drive letter to use when creating and attaching the VHD (should include colon)
 REM Find an available drive letter for a temporary drive
@@ -141,8 +143,8 @@ REM
 if not exist %exdrive%\ ((echo.)&(echo Drive %exdrive% seems not to exist.)&(goto :end))
 if not exist %imgdrive%\ ((echo.)&(echo Drive %imgdrive% seems not to exist.)&(goto :end))
 if exist %exdrive%\image.vhd ((echo.)&(echo %exdrive%\image.vhd already exists.)&(goto :end))
-if exist \windows\system32\imagex.exe ((echo.)&(set osversion=7)&(goto :drivesok)
-if exist \windows\system32\Dism.exe ((echo.)&(set osversion=10)&(if not exist %exdrive%\scratch mkdir %exdrive%\scratch)&(goto :drivesok)
+if exist \windows\system32\imagex.exe ((echo.)&(set osversion=7)&(goto :drivesok))
+if exist \windows\system32\Dism.exe ((echo.)&(set osversion=10)&(if not exist %exdrive%\scratch mkdir %exdrive%\scratch)&(goto :drivesok))
 echo ImageX and Dism missing... please only run this from a system booted from
 echo a Steadier State USB stick/CD.
 goto :end
@@ -171,6 +173,8 @@ echo   you want the resulting "image.vhd" file to be %vhdsize% gigabytes.
 echo I have noticed that you are preparing a Windows %osversion% system.
 echo Additionally, I will use drive %tdrive%: as a temporary drive letter.
 echo.
+
+:skipwim
 REM
 REM Ready to get to work
 REM
