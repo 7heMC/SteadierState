@@ -1,5 +1,6 @@
 @echo off
 setlocal ENABLEDELAYEDEXPANSION
+<<<<<<< HEAD
 echo.
 echo Here is the list of current volumes on your computer. This will hopefully
 echo help you answer the following questions.
@@ -22,6 +23,8 @@ echo please enter the path. For example, E:\images. Type 'end' to quit.
 set /p exdrive=What is your response?
 if '%exdrive%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :end))
 if '%exdrive%'='' ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo There doesn't seem to be anything at %exdrive%.  Let's try again.)&(echo.)&(goto :exdrivequestion))
+=======
+>>>>>>> 434c0a83ede97e6943483fc6101f003732107882
 REM
 REM Check that we're running from the root of the boot device
 REM Use the pseudo-variable ~d0 to get the job done
