@@ -34,8 +34,9 @@ echo Thanks for using Steadier State, I hope it's of value.
 echo -- Mark Minasi help@minasi.com www.steadierstate.com
 echo This copy of SteadierState has been modified and the source
 echo can be found at https://github.com/7heMC/SteadierState
-goto :end
-
+echo.
+echo Press any key to continue...
+pause
 echo.
 echo Here is the list of current volumes on your computer. This will hopefully
 echo help you answer the following questions.
