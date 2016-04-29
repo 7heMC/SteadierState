@@ -25,9 +25,9 @@ REM the WAIK/ADK.
 set "waikase=C:\Program Files\Windows AIK\Tools"
 set "adkbase=C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit"
 set makeiso=true
-set madeiso=
+set madeiso=false
 set makeusb=true
-set madeusb=
+set madeusb=false
 set usbdriveletter=none
 set logdir=C:\windows\logs\buildpelogs
 REM
@@ -539,7 +539,7 @@ echo minute.
 echo.
 robocopy %fname%\ISO\ %dl% /e >%logdir%\05makeusb.txt
 set robocopyrc=!errorlevel!
-if !robocopyrc!==0 ((echo Robocopy completed successfully.)&(goto :usbok))
+if !robocopyrc!==0 ((echo Robocopy completed successfully.)&(set madeusb=true)&(goto :usbok))
 echo Robocopy failed with return code !robocopyrc!.  USB stick NOT successfully created.
 set madeusb=false
 goto :donecreatingusb
@@ -550,7 +550,7 @@ echo minute.
 echo.
 call MakeWinPEMedia /ufd /f %fname% %dl% >%logdir%\05makeusb.txt
 set makewinpeufdrc=!errorlevel!
-if !makewinpeufdrc!==0 ((echo MakeWinPEMedia completed successfully.)&(goto :usbok))
+if !makewinpeufdrc!==0 ((echo MakeWinPEMedia completed successfully.)&(set madeusb=true)&(goto :usbok))
 echo MakeWinPEMedia failed with return code !makewinpeufdrc!.  USB stick NOT successfully created.
 set madeusb=false
 goto :donecreatingusb
@@ -605,7 +605,7 @@ REM
 REM get rid of old WinPE workspace
 REM
 echo Deleting WinPE workspace. >>%logdir%\startlog.txt
-if not '%fname%'=='' rd %fname% /s /q 2>nul
+if not %fname%== rd %fname% /s /q 2>nul
 popd
 echo.
 echo Done.  Now that you have a USB stick and/or an ISO, you can use them
