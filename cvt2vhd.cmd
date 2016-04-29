@@ -150,7 +150,7 @@ echo a Steadier State USB stick/CD.
 goto :end
 
 :drivesok
-CLS
+cls
 echo.
 echo                      Convert PC to VHD Routine
 echo                      -------------------------
@@ -173,8 +173,6 @@ echo   you want the resulting "image.vhd" file to be %vhdsize% gigabytes.
 echo I have noticed that you are preparing a Windows %osversion% system.
 echo Additionally, I will use drive %tdrive%: as a temporary drive letter.
 echo.
-
-:skipwim
 REM
 REM Ready to get to work
 REM
