@@ -91,7 +91,7 @@ if '%vhdsize%'=='' ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo You did not pro
 echo.
 set /a sizereq=(%vhdsize%*2)+(%vhdsize%/2)
 echo You have selected a vhdsize of %vhdsize% GB. So you will need atleast 
-echo %vhdsize% GB on your physical drive.
+echo %sizereq% GB on your physical drive.
 
 :skipwimquestion
 REM
@@ -101,13 +101,12 @@ echo.
 echo =========================================================
 echo Question 3: Skip wim creation?
 echo.
-echo Do you want to skip the step of creating a wim file. This step
+echo Do you want to skip the step of creating a wim file. This step is
 echo recommended and will be processed unless you type 'skip' below.
 set /p skipwim=What is your response?
 if '%skipwim%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :end))
 if '%skipwim%'=='skip' ((echo.)&(echo You have chosen not to create a wim file.)&(set skipwim=true)&(goto :end))
 set skipwim=false
-
 REM
 REM tdrive = temporary drive letter to use when creating and attaching the VHD (should include colon)
 REM Find an available drive letter for a temporary drive
@@ -132,16 +131,16 @@ goto :end
 REM 
 REM check for inputs on everything
 REM
-if '%exdrive%'=='' (goto :needinputs)
-if '%imgdrive%'=='' (goto :needinputs)
-if '%vhdsize%'=='' (goto :needinputs)
+if '%exdrive%'=='' goto :needinputs
+if '%imgdrive%'=='' goto :needinputs
+if '%vhdsize%'=='' goto :needinputs
 REM
 REM osversion = version of Windows PE
 REM Check the drives exist
 REM
-if not exist %exdrive%\ ((echo.) & (echo Drive %exdrive% seems not to exist.) & (goto :end))
-if not exist %imgdrive%\ ((echo.) & (echo Drive %imgdrive% seems not to exist.) & (goto :end))
-if exist %exdrive%\image.vhd ((echo.)&(echo %exdrive%\image.vhd already exists.) & (goto :end))
+if not exist %exdrive%\ ((echo.)&(echo Drive %exdrive% seems not to exist.)&(goto :end))
+if not exist %imgdrive%\ ((echo.)&(echo Drive %imgdrive% seems not to exist.)&(goto :end))
+if exist %exdrive%\image.vhd ((echo.)&(echo %exdrive%\image.vhd already exists.)&(goto :end))
 if exist \windows\system32\imagex.exe ((echo.)&(set osversion=7)&(goto :drivesok)
 if exist \windows\system32\Dism.exe ((echo.)&(set osversion=10)&(if not exist %exdrive%\scratch mkdir %exdrive%\scratch)&(goto :drivesok)
 echo ImageX and Dism missing... please only run this from a system booted from
