@@ -289,8 +289,8 @@ echo.
 echo Please press "y" and Enter to confirm that you want to
 set /p confirmresp=do this, or anything else and Enter to stop.
 echo.
-if not %confirmresp%==y goto :done
-if %confirmresp%==end ((echo.)&(echo Exiting as requested.)&(goto :done))
+if not '%confirmresp%'=='y' goto :done
+if '%confirmresp%=='end' ((echo.)&(echo Exiting as requested.)&(goto :done))
 echo.
 echo Buildpe started.  This may take about five to ten minutes in total.
 echo.
@@ -338,18 +338,15 @@ REM
 if %osresp%==7 (
 echo Mounting Winpe.wim >>%logdir%\startlog.txt
 imagex /mountrw %fname%\winpe.wim 1 %fname%\mount >%logdir%\03mount.txt
-set mountrc=!errorlevel!
-echo !mountrc!==0 goto :mountok
-echo.
-echo ********** ERROR:  Imagex mount attempt failed ******************
 ) else (
 echo Mounting boot.wim >>%logdir%\startlog.txt
 Dism /Mount-Image /ImageFile:%fname%\media\sources\boot.wim /index:1 /MountDir:%fname%\mount >%logdir%\03mount.txt
+)
 set mountrc=!errorlevel!
 if !mountrc!==0 goto :mountok
 echo.
-echo ********** ERROR:  Dism mount attempt failed ******************
-)
+if %osresp%==7 echo ********** ERROR:  Imagex mount attempt failed ******************
+if %osresp%==10 echo ********** ERROR:  Dism mount attempt failed ******************
 echo.
 echo The answer may simply be an incompletely dismounted previous run
 echo and in that case a simple reboot may clear things up. Here's the 
@@ -594,7 +591,7 @@ goto :donewithiso
 )
 
 :donewithiso
-if %madeiso%%madeusb%==falsefalse ((echo Errors were encountered and BuildPE was unable to prepare an USB or create an ISO. Check %logdir%\startlog.txt for more details.)&(goto :badend))
+if '%madeiso%%madeusb%'=='falsefalse' ((echo Errors were encountered and BuildPE was unable to prepare an USB or create an ISO. Check %logdir%\startlog.txt for more details.)&(goto :badend))
 REM
 REM finished without problems
 REM

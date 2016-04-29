@@ -35,13 +35,12 @@ echo -- Mark Minasi help@minasi.com www.steadierstate.com
 echo This copy of SteadierState has been modified and the source
 echo can be found at https://github.com/7heMC/SteadierState
 echo.
-echo Press any key to continue...
 pause
 echo.
 echo Here is the list of current volumes on your computer. This will hopefully
 echo help you answer the following questions.
 echo.
-for /f "delims={}" %%a in ('diskpart /s %sourceresp%\listvolume.txt') do (echo %%a)
+for /f "delims={}" %%a in ('diskpart /s \srs\listvolume.txt') do (echo %%a)
 echo.
 
 :imgdrivequestion
@@ -55,7 +54,7 @@ echo What is that local drive with Windows folder on it that we'll be imaging.
 echo This process does not sysprep, that's up to you. Your response should
 set /p imgdrive=include a colon (probably C:). Type 'end' to quit.
 if '%imgdrive%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :end))
-if '%imgdrive%'='' ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo There doesn't seem to be anything at %imgdrive%.  Let's try again.)&(echo.)&(goto :imgdrivequestion))
+if '%imgdrive%'=='' ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo There doesn't seem to be anything at %imgdrive%.  Let's try again.)&(echo.)&(goto :imgdrivequestion))
 
 :exdrivequestion
 REM
@@ -71,7 +70,7 @@ echo drive letter with a colon. If you would like to store it in a directory
 echo please enter the path. For example, E:\images
 set /p exdrive=What is your response?
 if '%exdrive%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :end))
-if '%exdrive%'='' ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo There doesn't seem to be anything at %exdrive%.  Let's try again.)&(echo.)&(goto :exdrivequestion))
+if '%exdrive%'=='' ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo There doesn't seem to be anything at %exdrive%.  Let's try again.)&(echo.)&(goto :exdrivequestion))
 
 :vhdsizequestion
 REM
@@ -88,7 +87,7 @@ echo image.vhd maximum size -- For example if the maximum size is 80 GB
 echo then the external drive would need to be 200 GB. (80 GB x 2.5 = 200 GB.)
 set /p vhdsize=Please enter just the number.
 if '%vhdsize%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :end))
-if '%vhdsize%'='' ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo You did not provide a number.  Let's try again.)&(echo.)&(goto :vhdsizequestion))
+if '%vhdsize%'=='' ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo You did not provide a number.  Let's try again.)&(echo.)&(goto :vhdsizequestion))
 echo.
 set /a sizereq=(%vhdsize%*2)+(%vhdsize%/2)
 echo You have selected a vhdsize of %vhdsize% GB. So you will need atleast 

@@ -1,10 +1,20 @@
 echo.@echo off
 setlocal ENABLEDELAYEDEXPANSION
+
+REM
+REM Check that we're running from the root of the boot device
+REM Use the pseudo-variable ~d0 to get the job done
+REM exdrive = external drive where the vhd is stored
+REM
+set drive=%~d0
+if not '%drive%'=='X:' goto :pleasebootfromUSBfirst
+%drive%
+cd \
 echo.
 echo Here is the list of current volumes on your computer. This will hopefully
 echo help you answer the following questions.
 echo.
-for /f "delims={}" %%a in ('diskpart /s %sourceresp%\listvolume.txt') do (echo %%a)
+for /f "delims={}" %%a in ('diskpart /s \srs\listvolume.txt') do (echo %%a)
 echo.
 
 :exdrivequestion
@@ -21,16 +31,7 @@ echo drive letter with a colon. If it is stored in a directory
 echo please enter the path. For example, E:\images. Type 'end' to quit.
 set /p exdrive=What is your response?
 if '%exdrive%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :end))
-if '%exdrive%'='' ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo There doesn't seem to be anything at %exdrive%.  Let's try again.)&(echo.)&(goto :exdrivequestion))
-REM
-REM Check that we're running from the root of the boot device
-REM Use the pseudo-variable ~d0 to get the job done
-REM exdrive = external drive where the vhd is stored
-REM
-set drive=%~d0
-if not '%drive%'=='X:' goto :pleasebootfromUSBfirst
-%drive%
-cd \
+if '%exdrive%'=='' ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo There doesn't seem to be anything at %exdrive%.  Let's try again.)&(echo.)&(goto :exdrivequestion))
 REM
 REM Next, find the USB drive's "real" drive letter
 REM (The USB or CD boots from a drive letter like C: or
