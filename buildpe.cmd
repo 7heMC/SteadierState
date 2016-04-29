@@ -38,7 +38,7 @@ whoami /groups |find /c "High Mandatory">temp.txt
 set total=
 set /p total= <temp.txt
 del temp.txt 2>nul
-if %total%==1 goto :youreanadmin
+if '%total%'=='1' goto :youreanadmin
 echo.
 echo I'm sorry, but you must be running from an elevated 
 echo command prompt to run this command file.  Start a new 
@@ -78,10 +78,31 @@ echo.
 echo To stop this program, you can type the word "end" as the answer
 echo to any question.  Please type all responses in LOWERCASE!
 
+:srsfiles
+echo.
+echo =========================================================
+echo Question 1: Where are the Steadier State files?
+echo.
+echo Finally, where is the folder with the Steadier State command files,
+echo the folder containing rollback.cmd, merge.cmd, startnethd.cmd,
+echo startnetusb.cmd and prepnewpc.cmd?  Please enter the 
+echo folder name here and press Enter; again, to stop this program
+echo just type "end" and press Enter:
+echo.
+set /p sourceresp=Your response (folder name for Steadier State files)? 
+if '%sourceresp%'=='end' ((echo Exiting at your request.)&(echo.)&(goto :done))
+echo.
+echo Checking for the files in folder "%sourceresp%"...
+if not exist %sourceresp%\rollback.cmd ((echo rollback.cmd not found in %sourceresp%.)&(goto :srsfiles))
+if not exist %sourceresp%\prepnewpc.cmd ((echo prepnewpc.cmd not found in %sourceresp%.)&(goto :srsfiles))
+if not exist %sourceresp%\merge.cmd ((echo merge.cmd not found in %sourceresp%.)&(goto :srsfiles))
+if not exist %sourceresp%\startnethd.cmd ((echo startnethd.cmd not found in %sourceresp%.)&(goto :srsfiles))
+if not exist %sourceresp%\cvt2vhd.cmd ((echo cvt2vhd.cmd not found in %sourceresp%.)&(goto :srsfiles))
+
 :usbquestion
 echo.
 echo =========================================================
-echo Question 1: Where's the USB stick (if any)?
+echo Question 2: Where's the USB stick (if any)?
 echo.
 echo Would you like me to set up the Steadier State install tool on a bootable
 echo USB stick (or any other UFD device, for that matter)?
@@ -92,43 +113,45 @@ echo Type "y"  (without the quotes) to set up a USB stick.  Enter anything
 echo else to NOT create a USB stick, or "end" to end this program.
 set /p usbresp=What's your answer? 
 echo.
-if %usbresp%==end ((echo.)&(echo Exiting as requested.)&(goto :done))
-if not %usbresp%==y goto :nousbstick
+if '%usbresp%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :done))
+if not '%usbresp%'=='y' goto :nousbstick
 echo.
-echo Okay, what is that USB stick's drive letter?
+echo Ok, here is the list of current volumes on your computer.
+for /f %%a in ('diskpart /s %sourceresp%\listvolume.txt') do (echo %%a)
+echo What is that USB stick's drive letter?
 echo Enter its drive letter -- just the letter, don't
 set /p usbdriveletter=add a colon (":") after it -- and press Enter.
-if %usbdriveletter%==end ((echo.)&(echo Exiting as requested.)&(goto :done))
+if '%usbdriveletter%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :done))
 echo.
 if not exist %usbdriveletter%:\ ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo.)&(echo There doesn't seem to be a USB stick at %usbdriveletter%:.  Let's try again.)&(echo.)&(goto :usbquestion))
 REM
 REM If not, there's a USB stick there.
 REM I need this to be uppercase so now I'll have to uppercase it.
 REM
-if %usbdriveletter%==c set usbdriveletter=C
-if %usbdriveletter%==d set usbdriveletter=D
-if %usbdriveletter%==e set usbdriveletter=E
-if %usbdriveletter%==f set usbdriveletter=F
-if %usbdriveletter%==g set usbdriveletter=G
-if %usbdriveletter%==h set usbdriveletter=H
-if %usbdriveletter%==i set usbdriveletter=I
-if %usbdriveletter%==j set usbdriveletter=J
-if %usbdriveletter%==k set usbdriveletter=K
-if %usbdriveletter%==l set usbdriveletter=L
-if %usbdriveletter%==m set usbdriveletter=M
-if %usbdriveletter%==n set usbdriveletter=N
-if %usbdriveletter%==o set usbdriveletter=O
-if %usbdriveletter%==p set usbdriveletter=P
-if %usbdriveletter%==q set usbdriveletter=Q
-if %usbdriveletter%==r set usbdriveletter=R
-if %usbdriveletter%==s set usbdriveletter=S
-if %usbdriveletter%==t set usbdriveletter=T
-if %usbdriveletter%==u set usbdriveletter=U
-if %usbdriveletter%==v set usbdriveletter=V
-if %usbdriveletter%==w set usbdriveletter=W
-if %usbdriveletter%==x set usbdriveletter=X
-if %usbdriveletter%==y set usbdriveletter=Y
-if %usbdriveletter%==z set usbdriveletter=Z
+if '%usbdriveletter%'=='c' set usbdriveletter=C
+if '%usbdriveletter%'=='d' set usbdriveletter=D
+if '%usbdriveletter%'=='e' set usbdriveletter=E
+if '%usbdriveletter%'=='f' set usbdriveletter=F
+if '%usbdriveletter%'=='g' set usbdriveletter=G
+if '%usbdriveletter%'=='h' set usbdriveletter=H
+if '%usbdriveletter%'=='i' set usbdriveletter=I
+if '%usbdriveletter%'=='j' set usbdriveletter=J
+if '%usbdriveletter%'=='k' set usbdriveletter=K
+if '%usbdriveletter%'=='l' set usbdriveletter=L
+if '%usbdriveletter%'=='m' set usbdriveletter=M
+if '%usbdriveletter%'=='n' set usbdriveletter=N
+if '%usbdriveletter%'=='o' set usbdriveletter=O
+if '%usbdriveletter%'=='p' set usbdriveletter=P
+if '%usbdriveletter%'=='q' set usbdriveletter=Q
+if '%usbdriveletter%'=='r' set usbdriveletter=R
+if '%usbdriveletter%'=='s' set usbdriveletter=S
+if '%usbdriveletter%'=='t' set usbdriveletter=T
+if '%usbdriveletter%'=='u' set usbdriveletter=U
+if '%usbdriveletter%'=='v' set usbdriveletter=V
+if '%usbdriveletter%'=='w' set usbdriveletter=W
+if '%usbdriveletter%'=='x' set usbdriveletter=X
+if '%usbdriveletter%'=='y' set usbdriveletter=Y
+if '%usbdriveletter%'=='z' set usbdriveletter=Z
 echo Found a device at %usbdriveletter%:.
 goto :isoquestion
 
@@ -142,7 +165,7 @@ set makeusb=false
 echo.
 echo.
 echo =========================================================
-echo Question 2: ISO File or no?
+echo Question 3: ISO File or no?
 echo.
 echo Would you like me to create an ISO file of a bootable CD image
 echo (equipped with the Steadier State install files) that you can burn to a
@@ -150,8 +173,8 @@ echo CD or use in a virtual machine environment?  This will be useful
 echo in situations where you don't have a USB stick or perhaps one 
 echo might not work.  To create the ISO, please respond "y" and Enter.
 set /p isoresp=Type y to make the ISO, end to exit, anything else to skip making the ISO?
-if %isoresp%==end ((echo.)&(echo Exiting as requested.)&(goto :done))
-if not %isoresp%==y goto :noiso
+if '%isoresp%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :done))
+if not '%isoresp%'=='y' goto :noiso
 set makeiso=true
 echo.
 echo Okay, I will create an ISO file in your Documents folder.
@@ -167,7 +190,7 @@ set makeiso=false
 REM
 REM Test to see if neither output desired
 REM
-if not %makeiso%%makeusb%==falsefalse goto :askos
+if not '%makeiso%%makeusb%'=='falsefalse' goto :askos
 echo.
 echo You've selected that you want neither a USB stick nor an ISO
 echo file, so there'd be no point in continuing.  Exiting...
@@ -178,17 +201,17 @@ goto :done
 echo.
 echo.
 echo =========================================================
-echo Question 3: What Version of Windows?
+echo Question 4: What Version of Windows?
 echo.
 echo Next, what version of Windows will you be using?
 echo SteadierState currently only supports Windows 7 and Windows 10.
 echo Please enter just the number and press Enter.
 set /p osresp=Your response?
-if %osresp%==end ((echo.)&(echo Exiting as requested.)&(goto :done))
-if %osresp%==7 ((if not exist "%waikbase%" goto :nowaik)&(goto :askarch))
-if %osresp%==8 goto :notsupported
-if %osresp%==8.1 goto :notsupported
-if %osresp%==10 ((if not exist "%adkbase%" goto :noadk)&(goto :askarch))
+if '%osresp%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :done))
+if '%osresp%'=='7' ((if not exist "%waikbase%" goto :nowaik)&(goto :askarch))
+if '%osresp%'=='8' goto :notsupported
+if '%osresp%'=='8.1' goto :notsupported
+if '%osresp%'=='10' ((if not exist "%adkbase%" goto :noadk)&(goto :askarch))
 echo.
 echo -------- ERROR -----------
 echo.
@@ -202,43 +225,22 @@ goto :askos
 echo.
 echo.
 echo =========================================================
-echo Question 4: 32 bit or 64 bit?
+echo Question 5: 32 bit or 64 bit?
 echo.
 echo Next, will you be putting this on a 32-bit or 64-bit
 echo system?  Please enter either "32" or "64" and press Enter.
 set /p archresp=Your response?
-if %archresp%==end ((echo.)&(echo Exiting as requested.)&(goto :done))
+if '%archresp%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :done))
 set arch=nothing
 set len=48
-if %archresp%==64 ((set arch=amd64)&(set len=64)& (goto :srsfiles))
-if %archresp%==32 ((set arch=x86)&(set len=32) &(goto :srsfiles))
+if '%archresp%'=='64' ((set arch=amd64)&(set len=64)& (goto :confirm))
+if '%archresp%'=='32' ((set arch=x86)&(set len=32) &(goto :confirm))
 echo.
 echo -------- ERROR -----------
 echo.
 echo Sorry, that didn't match either "32" or "64."
 echo.
 goto :askarch
-
-:srsfiles
-echo.
-echo =========================================================
-echo Question 5: Where are the Steadier State files?
-echo.
-echo Finally, where is the folder with the Steadier State command files,
-echo the folder containing rollback.cmd, merge.cmd, startnethd.cmd,
-echo startnetusb.cmd and prepnewpc.cmd?  Please enter the 
-echo folder name here and press Enter; again, to stop this program
-echo just type "end" and press Enter:
-echo.
-set /p sourceresp=Your response (folder name for Steadier State files)? 
-if %sourceresp%==end ((echo Exiting at your request.)&(echo.)&(goto :done))
-echo.
-echo Checking for the files in folder "%sourceresp%"...
-if not exist %sourceresp%\rollback.cmd ((echo rollback.cmd not found in %sourceresp%.)&(goto :srsfiles))
-if not exist %sourceresp%\prepnewpc.cmd ((echo prepnewpc.cmd not found in %sourceresp%.)&(goto :srsfiles))
-if not exist %sourceresp%\merge.cmd ((echo merge.cmd not found in %sourceresp%.)&(goto :srsfiles))
-if not exist %sourceresp%\startnethd.cmd ((echo startnethd.cmd not found in %sourceresp%.)&(goto :srsfiles))
-if not exist %sourceresp%\cvt2vhd.cmd ((echo cvt2vhd.cmd not found in %sourceresp%.)&(goto :srsfiles))
 
 :confirm
 echo.
@@ -369,12 +371,13 @@ echo boot.wim mounted, dism rc=%mountrc% >>%logdir%\startlog.txt
 )
 echo Creating and copying scripts to the USB stick and/or ISO image...
 md %fname%\mount\srs >nul
-copy %sourceresp%\prepnewpc.cmd %fname%\mount /y >nul
-copy %sourceresp%\winpe.bmp %fname%\mount\windows\system32 /y >nul
-copy %sourceresp%\startnethd.cmd %fname%\mount /y >nul
-copy %sourceresp%\merge.cmd %fname%\mount\srs /y >nul
-copy %sourceresp%\rollback.cmd %fname%\mount\srs /y >nul
 copy %sourceresp%\cvt2vhd.cmd %fname%\mount /y >nul
+copy %sourceresp%\listvolume.txt %fname%\mount\srs /y >nul
+copy %sourceresp%\merge.cmd %fname%\mount\srs /y >nul
+copy %sourceresp%\prepnewpc.cmd %fname%\mount /y >nul
+copy %sourceresp%\rollback.cmd %fname%\mount\srs /y >nul
+copy %sourceresp%\startnethd.cmd %fname%\mount /y >nul
+copy %sourceresp%\winpe.bmp %fname%\mount\windows\system32 /y >nul
 copy %sourceresp%\winpe1.bmp %fname%\mount\srs /y >nul
 REM
 REM different WinPE to differentiate if you booted USB or hard disk

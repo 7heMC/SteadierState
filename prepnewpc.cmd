@@ -1,12 +1,34 @@
 @echo off
+setlocal ENABLEDELAYEDEXPANSION
+echo.
+echo Here is the list of current volumes on your computer. This will hopefully
+echo help you answer the following questions.
+echo.
+for /f %%a in ('diskpart /s %sourceresp%\srs\listvolume.txt') do (echo %%a)
+echo.
+
+:exdrivequestion
+REM
+REM exdrive = external drive letter we'll write the wim and then vhd to (should include colon)
+REM
+echo.
+echo =========================================================
+echo Question 1: Where is the image stored?
+echo.
+echo What is the external drive and folder where you the vhd file is stored.
+echo If the vhd file is stored at the root of a drive you can simply enter the
+echo drive letter with a colon. If it is stored in a directory
+echo please enter the path. For example, E:\images. Type 'end' to quit.
+set /p exdrive=What is your response?
+if '%exdrive%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :end))
+if '%exdrive%'='' ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo There doesn't seem to be anything at %exdrive%.  Let's try again.)&(echo.)&(goto :exdrivequestion))
 REM
 REM Check that we're running from the root of the boot device
 REM Use the pseudo-variable ~d0 to get the job done
 REM exdrive = external drive where the vhd is stored
 REM
 set drive=%~d0
-set exdrive=%1
-if not x%drive%x==xX:x goto :pleasebootfromUSBfirst
+if not '%drive%'=='X:' goto :pleasebootfromUSBfirst
 %drive%
 cd \
 REM
@@ -241,8 +263,27 @@ echo.
 echo Diskpart phase 2 successfuly completed.
 echo Large drive formatted and labeled C:.
 echo.
+echo ===============================================================
+echo STEP TWO: Copy VHD File to the C: Partition
+echo.
+echo We'll use Robocopy to copy the image.vhd file on located in
+echo %exdrive% to the C: partition.
+echo ===============================================================
+echo.
+REM
+REM Move the vhd on to the C drive
+REM
+robocopy %exdrive% c: image.vhd /mt:50
+set robocopy1rc=%errorlevel%
+if %robocopy1rc%==0 ((echo.)&(echo VHD file successfully transferred to C:\image.vhd)&(goto :vhdcopyok))
+echo.
+echo ERROR:  Robocopy failed with return code %robocopy1rc%.  Can't continue, exiting.
+goto :eof
+
+:vhdcopyok
+echo.
 echo =============================================================================
-echo STEP TWO:  Install WinPE on System Reserved Partition
+echo STEP THREE:  Install WinPE on System Reserved Partition
 echo.
 echo Next, we'll use ImageX to lay down a WinPE image our new System Reserved
 echo partition, which has the (temporary only!) letter of %tdrive%.  The Steadier
@@ -270,7 +311,7 @@ if %osversion%==7 echo ImageX successfully imaged boot.wim onto %tdrive%.
 if %osversion%==10 echo Dism successfully imaged boot.wim onto %tdrive%.
 echo.
 echo ===============================================================
-echo STEP THREE: Copy Boot Files to System Reserved Partition
+echo STEP FOUR: Copy Boot Files to System Reserved Partition
 echo.
 echo With that out of the way, we'll need some extra boot files that
 echo do not ship with WinPE, so we'll copy them from your existing
@@ -283,10 +324,10 @@ REM Grab a basic boot folder and BOOTMGR
 REM
 if %osversion%==7 (
 robocopy %realdrive%\boot %tdrive%\boot * /e /a-:ar
-set robocopy1rc=!errorlevel!
-if %robocopy1rc%==0 ((copy %realdrive%\bootmgr %tdrive% /y)&(goto :bcdcopyok))
+set robocopy2rc=!errorlevel!
+if %robocopy2rc%==0 ((copy %realdrive%\bootmgr %tdrive% /y)&(goto :bcdcopyok))
 echo.
-echo ERROR:  Robocopy failed with return code %robocopy1rc%.  Can't continue, exiting.
+echo ERROR:  Robocopy failed with return code %robocopy2rc%.  Can't continue, exiting.
 goto :eof
 ) else (
 REM
@@ -311,9 +352,7 @@ goto :eof
 REM
 REM listvhd.txt is the name of the script to find the volumes
 REM
-echo list volume >>%drive%\listvhd.txt
-echo exit >>%drive%\listvhd.txt
-for /f "tokens=2,4" %%a in ('diskpart /s %drive%\listvhd.txt') do (if %%b==Windows_SRS set volnum=%%a)
+for /f "tokens=2,4" %%a in ('diskpart /s %drive%\srs\listvhd.txt') do (if %%b==Windows_SRS set volnum=%%a)
 set volnumrc=!errorlevel!
 if !volnumrc!==0 ((echo Diskpart phase 4 ended successfully, vhd is volume !volnum!.)&(goto :foundvolume))
 echo.
@@ -354,7 +393,7 @@ goto :eof
 :bcdcopyok
 echo.
 echo ==============================================================================
-echo STEP FOUR:  BUILD A NEW BOOT CONFIGURATION DATABASE
+echo STEP FIVE:  BUILD A NEW BOOT CONFIGURATION DATABASE
 echo.
 echo Now we'll need a new boot configuration database (BCD).  It's an essential
 echo file that every copy of Windows since Vista requires, and we need one that
@@ -441,7 +480,7 @@ goto :eof
 :bcdok
 echo.
 echo ===============================================================================
-echo STEP FIVE: INSTALL STEADY STATE FILES AND IMAGEX IN WINPE
+echo STEP SIX: INSTALL STEADY STATE FILES AND IMAGEX IN WINPE
 echo.
 echo Finally, we'll a create a folder \SDRState inside the copy of WinPE that we've
 echo just installed in your System Reserved partition and then copy the Steadier 
@@ -508,6 +547,32 @@ echo stick.
 echo.
 echo Thanks, and I hope you find Steadier State useful.
 goto :badend
+
+:background
+echo How and Why To Use PREPNEWPC in Steadier State
+echo --------------------------------------------
+echo.
+echo Steadier State lets you create a "snapshot" of a Windows
+echo installation so that you can choose at any time to reboot
+echo your Windows system, choose "Roll Back Windows," and at
+echo that point every change you've made to the system is un-done.
+echo To do that, however, Steadier State requires you to prepare
+echo your Windows system, and PREPNEWPC does that for you.
+echo.
+echo To get a system ready for conversion, first boot it from
+echo your SDRState bootable USB stick or CD.  Then, connect
+echo the system to some large external drive, whether it's a 
+echo networked drive mapped to a drive letter or perhaps a large
+echo external hard disk -- you'll need that because you're going
+echo to take the VHD file that you created with CVT2VHD.
+echo On the USB stick/CD, you'll see a file named
+echo prepnewpc.cmd
+echo.
+echo That'll take a while, but when it's done, the vhd file
+echo will be moved from the external drive to your C: drive.
+echo Once you've got that image.vhd on the C: drive you can boot
+echo a system to get it ready to be able to use that VHD.  You can
+echo to it by simply restarting your computer.
 
 :wrongdrive
 echo.

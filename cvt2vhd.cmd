@@ -1,24 +1,119 @@
 @echo off
-REM
-REM invoke this cvt2vhd <letter of drive we're imaging:> <letter of drive we're using to save WIM and VHD:> <size of VHD in gigabytes>
-REM if you add "skipwim," it'll skip imaging (which takes time)
+setlocal ENABLEDELAYEDEXPANSION
+
+:background
+echo How and Why To Use CVT2VHD in Steadier State
+echo --------------------------------------------
+echo.
+echo Steadier State lets you create a "snapshot" of a Windows
+echo installation so that you can choose at any time to reboot
+echo your Windows system, choose "Roll Back Windows," and at
+echo that point every change you've made to the system is un-done.
+echo To do that, however, Steadier State requires you to convert
+echo your Windows system to a VHD file, and CVT2VHD does that 
+echo for you.
+echo.
+echo To get a system ready for conversion, first boot it from
+echo your SteadierState bootable USB stick or CD.  Then, connect
+echo the system to some large external drive, whether it's a 
+echo networked drive mapped to a drive letter or perhaps a large
+echo external hard disk -- you'll need that because you're going
+echo to take that system's C: drive and rebuild it as one large
+echo VHD file.  On the USB stick/CD, you'll see a file named
+echo cvt2vhd.cmd.  
+echo.
+echo This'll take a while, but when it's done, you'll have a file
+echo named image.vhd on your target drive. Once you've got the
+echo image.vhd, you're ready to prep a system to get it ready to 
+echo be able to use that VHD.  You can do that by booting the system
+echo with your USB stick/CD and then running prepnewpc. Or if you
+echo want to deploy it on this machine simply use run the prepnewpc
+echo command once this is complete.
+echo.
+echo Thanks for using Steadier State, I hope it's of value.
+echo -- Mark Minasi help@minasi.com www.steadierstate.com
+echo This copy of SteadierState has been modified and the source
+echo can be found at https://github.com/7heMC/SteadierState
+goto :end
+
+echo.
+echo Here is the list of current volumes on your computer. This will hopefully
+echo help you answer the following questions.
+echo.
+for /f %%a in ('diskpart /s %sourceresp%\srs\listvolume.txt') do (echo %%a)
+echo.
+
+:imgdrivequestion
 REM
 REM imgdrive = local drive with Windows folder on it that we'll be imaging (does not sysprep, that's up to you) (should include colon)
+REM
+echo =========================================================
+echo Question 1: What drive will be imaged?
+echo.
+echo What is that local drive with Windows folder on it that we'll be imaging.
+echo This process does not sysprep, that's up to you. Your response should
+set /p imgdrive=include a colon (probably C:). Type 'end' to quit.
+if '%imgdrive%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :end))
+if '%imgdrive%'='' ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo There doesn't seem to be anything at %imgdrive%.  Let's try again.)&(echo.)&(goto :imgdrivequestion))
+
+:exdrivequestion
+REM
 REM exdrive = external drive letter we'll write the wim and then vhd to (should include colon)
+REM
+echo.
+echo =========================================================
+echo Question 2: Where will the image be stored?
+echo.
+echo What is the external drive and folder where you would like to store the vhd file.
+echo If you would like to store the vhd at the root of a drive you can simply enter the
+echo drive letter with a colon. If you would like to store it in a directory
+echo please enter the path. For example, E:\images
+set /p exdrive=What is your response?
+if '%exdrive%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :end))
+if '%exdrive%'='' ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo There doesn't seem to be anything at %exdrive%.  Let's try again.)&(echo.)&(goto :exdrivequestion))
+
+:vhdsizequestion
+REM
 REM vhdsize = size of the image.vhd file (an expandable file) in megabytes... we'll add 000 to make it gigabytes
-REM tdrive = temporary drive letter to use when creating and attaching the VHD (should include colon)
 REM
-set imgdrive=%1
-set exdrive=%2
-set vhdsize=%3
+echo.
+echo =========================================================
+echo Question 3: What is the maximum size of the vhd?
+echo.
+echo What is the maximum size that the VHD will need to be, in gigabytes?
+echo Remember that the physical volume that you deploy this image.vhd to
+echo should have an amount of free space equal to at least 2.5 times the
+echo image.vhd maximum size -- For example if the maximum size is 80 GB
+echo then the external drive would need to be 200 GB. (80 GB x 2.5 = 200 GB.)
+set /p vhdsize=Please enter just the number.
+if '%vhdsize%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :end))
+if '%vhdsize%'='' ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo You did not provide a number.  Let's try again.)&(echo.)&(goto :vhdsizequestion))
+echo.
+set /a sizereq=(%vhdsize%*2)+(%vhdsize%/2)
+echo You have selected a vhdsize of %vhdsize% GB. So you will need atleast 
+echo %vhdsize% GB on your physical drive.
+
+:skipwimquestion
+REM
+REM skipwim = determines whether a wim file is created
+REM
+echo.
+echo =========================================================
+echo Question 3: Skip wim creation?
+echo.
+echo Do you want to skip the step of creating a wim file. This step
+echo recommended and will be processed unless you type 'skip' below.
+set /p skipwim=What is your response?
+if '%skipwim%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :end))
+if '%skipwim%'=='skip' ((echo.)&(echo You have chosen not to create a wim file.)&(set skipwim=true)&(goto :end))
 set skipwim=false
-if %4==skipwim set skipwim=true
-if '%exdrive%%imgdrive%%vhdsize%'=='' (goto :background)
+
 REM
+REM tdrive = temporary drive letter to use when creating and attaching the VHD (should include colon)
 REM Find an available drive letter for a temporary drive
 REM
 set tdrive=none
-if not exist w:\ set tdrive=w
+if not exist W:\ set tdrive=w
 if not exist V:\ set tdrive=v
 if not exist U:\ set tdrive=u
 if not exist T:\ set tdrive=t
@@ -198,52 +293,6 @@ echo -- Mark Minasi help@minasi.com www.steadierstate.com
 echo This copy of SteadierState has been modified and the source
 echo can be found at https://github.com/7heMC/SteadierState
 goto :eof
-
-:background
-echo How and Why To Use CVT2VHD in Steadier State
-echo --------------------------------------------
-echo.
-echo Steadier State lets you create a "snapshot" of a Windows
-echo installation so that you can choose at any time to reboot
-echo your Windows system, choose "Roll Back Windows," and at
-echo that point every change you've made to the system is un-done.
-echo To do that, however, Steadier State requires you to convert
-echo your Windows system to a VHD file, and CVT2VHD does that 
-echo for you.
-echo.
-echo To get a system ready for conversion, first boot it from
-echo your SDRState bootable USB stick or CD.  Then, connect
-echo the system to some large external drive, whether it's a 
-echo networked drive mapped to a drive letter or perhaps a large
-echo external hard disk -- you'll need that because you're going
-echo to take that system's C: drive and rebuild it as one large
-echo VHD file.  On the USB stick/CD, you'll see a file named
-echo cvt2vhd.cmd.  Run that file, putting in the drive letter
-echo to image (probably C:), the external drive/mapped drive to
-echo save the new VHD to (could be anything, I'll use e: in my
-echo example), and then the maximum size that the VHD will need
-echo to be, in gigabytes (I'll assume 80 GB in my example).  For
-echo example, you might start it like this:
-echo.
-echo cvt2vhd c: e: 80
-echo.
-echo That'll take a while, but when it's done, you'll have a file
-echo named image.vhd on your target drive -- again, E: in my 
-echo example.  Once you've got that image.vhd, it's ready to prep
-echo a system to get it ready to be able to use that VHD.  You can
-echo do that by booting the system with your USB stick/CD and
-echo then running prepnewpc.
-echo.
-echo Also, remember that the physical volume that you deploy this
-echo image.vhd to should have an amount of free space equal to at
-echo least 2.5 times the image.vhd maximum size -- 200 GB in this
-echo case.  (80 GB x 2.5 = 200 GB.)
-echo.
-echo Thanks for using Steadier State, I hope it's of value.
-echo -- Mark Minasi help@minasi.com www.steadierstate.com
-echo This copy of SteadierState has been modified and the source
-echo can be found at https://github.com/7heMC/SteadierState
-goto :end
 
 :needinputs
 echo.
