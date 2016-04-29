@@ -1,6 +1,5 @@
 @echo off
 setlocal ENABLEDELAYEDEXPANSION
-<<<<<<< HEAD
 
 :background
 echo How and Why To Use CVT2VHD in Steadier State
@@ -45,11 +44,6 @@ for /f %%a in ('diskpart /s %sourceresp%\srs\listvolume.txt') do (echo %%a)
 echo.
 
 :imgdrivequestion
-=======
-REM
-REM invoke this cvt2vhd <letter of drive we're imaging:> <letter of drive we're using to save WIM and VHD:> <size of VHD in gigabytes>
-REM if you add "skipwim," it'll skip imaging (which takes time)
->>>>>>> 434c0a83ede97e6943483fc6101f003732107882
 REM
 REM imgdrive = local drive with Windows folder on it that we'll be imaging (does not sysprep, that's up to you) (should include colon)
 REM

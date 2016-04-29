@@ -78,7 +78,7 @@ echo.
 echo To stop this program, you can type the word "end" as the answer
 echo to any question.  Please type all responses in LOWERCASE!
 
-:srsfiles
+:filesquestion
 echo.
 echo =========================================================
 echo Question 1: Where are the Steadier State files?
@@ -93,11 +93,13 @@ set /p sourceresp=Your response (folder name for Steadier State files)?
 if '%sourceresp%'=='end' ((echo Exiting at your request.)&(echo.)&(goto :done))
 echo.
 echo Checking for the files in folder "%sourceresp%"...
-if not exist %sourceresp%\rollback.cmd ((echo rollback.cmd not found in %sourceresp%.)&(goto :srsfiles))
-if not exist %sourceresp%\prepnewpc.cmd ((echo prepnewpc.cmd not found in %sourceresp%.)&(goto :srsfiles))
-if not exist %sourceresp%\merge.cmd ((echo merge.cmd not found in %sourceresp%.)&(goto :srsfiles))
-if not exist %sourceresp%\startnethd.cmd ((echo startnethd.cmd not found in %sourceresp%.)&(goto :srsfiles))
-if not exist %sourceresp%\cvt2vhd.cmd ((echo cvt2vhd.cmd not found in %sourceresp%.)&(goto :srsfiles))
+if not exist %sourceresp%\cvt2vhd.cmd ((echo cvt2vhd.cmd not found in %sourceresp%.)&(goto :filesquestion))
+if not exist %sourceresp%\listvolume.txt ((echo listvolume.txt not found in %sourceresp%.)&(goto :filesquestion))
+if not exist %sourceresp%\merge.cmd ((echo merge.cmd not found in %sourceresp%.)&(goto :filesquestion))
+if not exist %sourceresp%\prepnewpc.cmd ((echo prepnewpc.cmd not found in %sourceresp%.)&(goto :filesquestion))
+if not exist %sourceresp%\rollback.cmd ((echo rollback.cmd not found in %sourceresp%.)&(goto :filesquestion))
+if not exist %sourceresp%\startnethd.cmd ((echo startnethd.cmd not found in %sourceresp%.)&(goto :filesquestion))
+
 
 :usbquestion
 echo.
