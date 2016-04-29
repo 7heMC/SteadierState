@@ -40,7 +40,7 @@ echo.
 echo Here is the list of current volumes on your computer. This will hopefully
 echo help you answer the following questions.
 echo.
-for /f %%a in ('diskpart /s %sourceresp%\srs\listvolume.txt') do (echo %%a)
+for /f "delims={}" %%a in ('diskpart /s %sourceresp%\listvolume.txt') do (echo %%a)
 echo.
 
 :imgdrivequestion

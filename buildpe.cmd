@@ -100,7 +100,6 @@ if not exist %sourceresp%\prepnewpc.cmd ((echo prepnewpc.cmd not found in %sourc
 if not exist %sourceresp%\rollback.cmd ((echo rollback.cmd not found in %sourceresp%.)&(goto :filesquestion))
 if not exist %sourceresp%\startnethd.cmd ((echo startnethd.cmd not found in %sourceresp%.)&(goto :filesquestion))
 
-
 :usbquestion
 echo.
 echo =========================================================
@@ -119,7 +118,7 @@ if '%usbresp%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :done))
 if not '%usbresp%'=='y' goto :nousbstick
 echo.
 echo Ok, here is the list of current volumes on your computer.
-for /f %%a in ('diskpart /s %sourceresp%\listvolume.txt') do (echo %%a)
+for /f "delims={}" %%a in ('diskpart /s %sourceresp%\listvolume.txt') do (echo %%a)
 echo What is that USB stick's drive letter?
 echo Enter its drive letter -- just the letter, don't
 set /p usbdriveletter=add a colon (":") after it -- and press Enter.
