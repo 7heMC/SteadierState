@@ -325,9 +325,9 @@ REM
 if %osversion%==7 (
 robocopy %realdrive%\boot %tdrive%\boot * /e /a-:ar
 set robocopy2rc=!errorlevel!
-if %robocopy2rc%==0 ((copy %realdrive%\bootmgr %tdrive% /y)&(goto :bcdcopyok))
+if !robocopy2rc!==0 ((copy %realdrive%\bootmgr %tdrive% /y)&(goto :bcdcopyok))
 echo.
-echo ERROR:  Robocopy failed with return code %robocopy2rc%.  Can't continue, exiting.
+echo ERROR:  Robocopy failed with return code !robocopy2rc!.  Can't continue, exiting.
 goto :eof
 ) else (
 REM
@@ -374,7 +374,7 @@ diskpart /s %drive%\mountvhd.txt
 set diskpart4rc=!errorlevel!
 if !diskpart4rc!==0 (set vdrive=%vdrive%:)&(echo Diskpart phase 5 ended successfully, vhd is drive !vdrive!.)&(goto :vhdok))
 echo.
-echo Diskpart phase 5 failed, return code %diskpart4rc%.
+echo Diskpart phase 4 failed, return code !diskpart4rc!.
 echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
 echo just reported to see if there's a clue in there.  You may also get a clue from
 echo the diskpart scripts (wiperb.txt, wiperc.txt, wipernoc.txt, attachvhd.txt,
@@ -435,7 +435,7 @@ REM Windows 7 can import the bcd and knock off the "/store bcd" stuff
 REM Windows 10 will still need the /store parameter
 REM
 if %osversion%==7 (
-set 'bcdstore'=''
+set bcdstore=
 bcdedit /import bcd 
 cd \ 
 rd \temp /s /q
