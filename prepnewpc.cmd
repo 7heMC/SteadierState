@@ -344,7 +344,7 @@ echo.
 echo Diskpart phase 3 failed, return code !diskpart3rc!.
 echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
 echo just reported to see if there's a clue in there.  You may also get a clue from
-echo the diskpart scripts (attachvhd.txt, mountvhd.txt, listvhd.txt) on drive %drive%.
+echo the diskpart scripts (attachvhd.txt, mountvhd.txt, listvhd.txt^) on drive %drive%.
 goto :eof
 
 :listvolume
@@ -358,7 +358,7 @@ echo.
 echo Diskpart phase 4 failed, return code !volnumrc!.
 echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
 echo just reported to see if there's a clue in there.  You may also get a clue from
-echo the diskpart scripts (attachvhd.txt, mountvhd.txt, listvhd.txt) on drive %drive%.
+echo the diskpart scripts (attachvhd.txt, mountvhd.txt, listvhd.txt^) on drive %drive%.
 goto :eof
 
 :foundvolume
@@ -375,7 +375,7 @@ echo.
 echo Diskpart phase 4 failed, return code !diskpart4rc!.
 echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
 echo just reported to see if there's a clue in there.  You may also get a clue from
-echo the diskpart scripts (attachvhd.txt, mountvhd.txt, listvhd.txt) on drive %drive%.
+echo the diskpart scripts (attachvhd.txt, mountvhd.txt, listvhd.txt^) on drive %drive%.
 goto :eof
 
 :vhdok
