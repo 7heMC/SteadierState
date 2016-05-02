@@ -114,7 +114,7 @@ REM
 REM Then check for an onboard copy of imagex and Dism.
 REM
 if exist x:\windows\system32\imagex.exe ((set osversion=7)&(goto :drivesok))
-if exist x:\windows\system32\Dism.exe ((set osversion=10)&(if not exist %tdrive%\scratch mkdir %tdrive%\scratch)&(goto :drivesok))
+if exist x:\windows\system32\Dism.exe ((set osversion=10)&(if not exist %exdrive%\scratch mkdir %exdrive%\scratch)&(goto :drivesok))
 echo.
 echo Error: imagex.exe and Dism.exe are missing from your USB stick's \windows\system32
 echo folder.  Please rebuild your Steadier State install USB stick or CD ISO with
@@ -298,7 +298,7 @@ REM
 if %osversion%==7 (
 imagex /apply %realdrive%\sources\boot.wim 1 %tdrive% /check /verify
 ) else (
-Dism /Apply-Image /ImageFile:%realdrive%\sources\boot.wim /ApplyDir:%tdrive% /ScratchDir:%tdrive%\scratch /Index:1 /CheckIntegrity /Verify
+Dism /Apply-Image /ImageFile:%realdrive%\sources\boot.wim /ApplyDir:%tdrive% /ScratchDir:%exdrive%\scratch /Index:1 /CheckIntegrity /Verify
 )
 set applyrc=%errorlevel%
 if %applyrc%==0 goto :applyok
