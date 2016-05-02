@@ -370,7 +370,7 @@ echo assign letter=%vdrive% >>%drive%\mountvhd.txt
 echo exit >>%drive%\mountvhd.txt
 diskpart /s %drive%\mountvhd.txt
 set diskpart4rc=!errorlevel!
-if !diskpart4rc!==0 (set vdrive=%vdrive%:)&(echo Diskpart phase 5 ended successfully, vhd is drive !vdrive!.)&(goto :vhdok))
+if !diskpart4rc!==0 ((set vdrive=%vdrive%:)&(echo Diskpart phase 5 ended successfully, vhd is drive !vdrive!.)&(goto :vhdok))
 echo.
 echo Diskpart phase 4 failed, return code !diskpart4rc!.
 echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
