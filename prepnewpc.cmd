@@ -24,7 +24,7 @@ echo.
 echo =========================================================
 echo Question 1: Where is the image stored?
 echo.
-echo What is the external drive and folder where you the vhd file is stored.
+echo What is the external drive and folder where the vhd file is stored.
 echo If the vhd file is stored at the root of a drive you can simply enter the
 echo drive letter with a colon. If it is stored in a directory
 echo please enter the path. For example, E:\images. Type 'end' to quit.
@@ -275,7 +275,7 @@ REM Move the vhd on to the C drive
 REM
 robocopy %exdrive% c: image.vhd /mt:50
 set robocopy1rc=%errorlevel%
-if %robocopy1rc%==0 ((echo.)&(echo VHD file successfully transferred to C:\image.vhd)&(goto :vhdcopyok))
+if %robocopy1rc%==1 ((echo.)&(echo VHD file successfully transferred to C:\image.vhd)&(goto :vhdcopyok))
 echo.
 echo ERROR:  Robocopy failed with return code %robocopy1rc%.  Can't continue, exiting.
 goto :eof
