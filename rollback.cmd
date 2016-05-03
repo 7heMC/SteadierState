@@ -89,6 +89,19 @@ REM
 set drive=%~d0
 if not '%drive%'=='X:' goto :notwinpe
 REM
+REM Then check for an onboard copy of imagex and Dism.
+REM
+if exist %drive%\windows\system32\imagex.exe ((set "bcdstore=")&(goto :xdriveok))
+if exist %drive%\windows\system32\Dism.exe ((set "bcdstore=/store %drive%\EFI\Microsoft\Boot\BCD")&(goto :xdriveok))
+echo.
+echo Error: imagex.exe and Dism.exe are missing from WinPE Please rebuild
+echo your Steadier State install USB stick or CD ISO with buildpe.cmd and
+echo use that new device to boot this system and try again.
+echo.
+goto :badend
+
+:xdriveok
+REM
 REM listvolume.txt is the name of the script to find the volumes
 REM
 for /f "tokens=3-5" %%a in ('diskpart /s %drive%\srs\listvolume.txt') do (if "%%b %%c"=="Physical Dr" set volletter=%%a)
@@ -119,7 +132,7 @@ echo STEP TWO: CREATE NEW SNAPSHOT
 echo.
 diskpart /s %drive%\makesnapshot.txt 
 set diskpart1rc=%errorlevel%
-if %diskpart1rc%==0 goto :dpok1
+if %diskpart1rc%==0 goto :diskpart1ok
 REM
 REM If here, something went wrong creating the snapshot
 REM
@@ -130,7 +143,7 @@ echo.
 exit 99
 goto :eof
 
-:dpok1
+:diskpart1ok
 del %drive%\makesnapshot.txt 2>rollbacklog.txt
 echo ... success.
 echo Looking to see if a new BCD entry necessary...
@@ -147,8 +160,8 @@ REM snapshot.
 REM
 REM @echo off
 REM
-del %drive%\temp.txt 2> nul
-bcdedit |find /c "snapshot.vhd">%drive%\temp.txt
+del %drive%\temp.txt 2>nul
+bcdedit %bcdstore% |find /c "snapshot.vhd">%drive%\temp.txt
 set total=
 set /p total= <%drive%\temp.txt
 del %drive%\temp.txt 2>nul
@@ -160,16 +173,16 @@ set total=
 set guid=
 echo No BCD entries currently to boot from snapshot.vhd, so we'll create one...
 for /f "tokens=2 delims={}" %%a in ('bcdedit /create /d "Windows 10" /application osloader') do (set guid={%%a})
-bcdedit /set %GUID% device vhd=[%vdrive%]\snapshot.vhd >nul
-bcdedit /set %GUID% osdevice vhd=[%vdrive%]\snapshot.vhd >nul
-bcdedit /set %GUID% path \windows\system32\winload.efi >nul
-bcdedit /set %GUID% inherit {bootloadersettings} >nul
-bcdedit /set %GUID% recoveryenabled no >nul
-bcdedit /set %GUID% systemroot \windows	 >nul	
-bcdedit /set %GUID% nx OptIn >nul
-bcdedit /set detecthal yes >nul
-bcdedit /displayorder %GUID% /addlast >nul
-bcdedit /default %GUID%  >nul
+bcdedit %bcdstore% /set %GUID% device vhd=[%vdrive%]\snapshot.vhd >nul
+bcdedit %bcdstore% /set %GUID% osdevice vhd=[%vdrive%]\snapshot.vhd >nul
+bcdedit %bcdstore% /set %GUID% path \windows\system32\winload.efi >nul
+bcdedit %bcdstore% /set %GUID% inherit {bootloadersettings} >nul
+bcdedit %bcdstore% /set %GUID% recoveryenabled no >nul
+bcdedit %bcdstore% /set %GUID% systemroot \windows	 >nul	
+bcdedit %bcdstore% /set %GUID% nx OptIn >nul
+bcdedit %bcdstore% /set detecthal yes >nul
+bcdedit %bcdstore% /displayorder %GUID% /addlast >nul
+bcdedit %bcdstore% /default %GUID%  >nul
 echo Success.  Reboot and from now on any changes can be un-done by running this command file again.
 goto :goodend
 
