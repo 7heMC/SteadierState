@@ -91,7 +91,7 @@ if not '%drive%'=='X:' goto :notwinpe
 REM
 REM listvolume.txt is the name of the script to find the volumes
 REM
-for /f "tokens=3,4" %%a in ('diskpart /s %drive%\srs\listvolume.txt') do (if '%%b'=='Physical Dr' set volletter=%%a)
+for /f "tokens=3-5" %%a in ('diskpart /s %drive%\srs\listvolume.txt') do (if "%%b %%c"=="Physical Dr" set volletter=%%a)
 if '%volletter%'=='' goto :badend
 set vdrive=%volletter%:
 echo Checking for master image file on disk...
