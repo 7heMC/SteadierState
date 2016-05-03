@@ -1,25 +1,26 @@
 wpeinit
 @echo off
+REM
 REM As we're (1) booting WinPE and (2) booting from a hard
 REM disk image rather than a RAMdisk, we can be sure that 
 REM the System Reserved partition -- which contains WinPE --
 REM is running as X:.
 REM It also means that the remaining large drive with the
 REM label "Physical Drive" is lettered C:.
-set path=%path%X:\SDRState;
+REM
+set path=%path%X:\srs;
 set bootsource=Hard Drive
 echo Windows PE 3.0 booted from local hard drive.
-
 REM
 REM gather state information
 REM
-cd \SDRState
+cd \srs
 set noimage=false
 If not exist c:\image.vhd set noimage=true
 set nosnap=false
 If not exist c:\snapshot.vhd set nosnap=true
 set showcmd=false
-if exist x:\SDRState\noauto.txt set showcmd=true
+if exist x:\srs\noauto.txt set showcmd=true
 if exist c:\noauto.txt set showcmd=true 
 if exist d:\noauto.txt set showcmd=true 
 if exist e:\noauto.txt set showcmd=true
@@ -32,28 +33,23 @@ if exist k:\noauto.txt set showcmd=true
 if exist l:\noauto.txt set showcmd=true
 if exist m:\noauto.txt set showcmd=true
 if exist n:\noauto.txt set showcmd=true
-
 REM
 REM If noimage=false AND nosnap=false AND showcmd=false, do auto rollback
 REM
 if %noimage%%nosnap%%showcmd%==falsefalsefalse goto :automatic 
-
 REM
 REM If noimage=true, show "next step" message and return to prompt, as
 REM the user's in the middle of getting things going.
 REM
 if %noimage%==true goto :noimage
-
 REM
 REM If nosnap=true, we have an image but no snapshot, so just set up that snapshot
 REM and tell the user what we did.  (Advise her about noauto.txt as well.)
 REM
 if %nosnap%==true goto :nosnap
-
 REM
 REM Otherwise, we're just invoking WinPE.
 REM
-
 goto :showshell
 
 :automatic
@@ -102,10 +98,8 @@ echo.
 echo.
 call rollback.cmd
 echo.
-
 exit
 goto :eof
-
 
 :showshell
 REM
@@ -135,6 +129,6 @@ echo between C: and L:.  (See the documentation for more details on noauto.txt.)
 echo.
 echo Thanks for using Steadier State, I hope it's helpful.
 echo -- Mark Minasi help@minasi.com www.steadierstate.com
-
 goto :end
+
 :end

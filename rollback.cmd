@@ -1,11 +1,11 @@
 @echo off
+REM
 REM vdrive should point to the drive where image.vhd exists
 REM That SHOULD be drive C: because System Reserved -- which
 REM might otherwise snatch C: first -- contains WinPE and we're
 REM booting WinPE from a hard disk, not a RAM drive, leading to
 REM the interesting situation that we can pretty much assume that
 REM System Reserved WILL have a drive letter... and it'll be X:.
-set vdrive=c:
 REM
 REM Steadier State command file \SDRState\rollback.cmd
 REM
@@ -85,10 +85,17 @@ REM
 REM first verify there's a file \image.vhd on the current drive
 REM and use the drive letter %vdrive% to stop people from running the
 REM script from Windows 7 accidentally
+REM
 
+:listvolume
+REM
+REM listvolume.txt is the name of the script to find the volumes
+REM
+for /f "tokens=3,4" %%a in ('diskpart /s x:\srs\listvolume.txt') do (if '%%b'=='Physical Dr' set volletter=%%a)
+if '%volletter%'=='' goto :badend
+set vdrive=%volletter%:
 echo Checking for master image file on disk...
 if not exist %vdrive%\image.vhd goto :Noimage
-
 echo ... found master image (image.vhd) file on %vdrive%. 
 echo. 
 echo STEP ONE: DELETE CURRENT SNAPSHOT
@@ -102,7 +109,7 @@ REM
 REM Next, prepare the script for diskpart
 REM
 del x:\makesnapshot.txt 2>nul
-echo create vdisk file="%vdrive%\snapshot.vhd" parent="%vdrive%\image.vhd" > x:\makesnapshot.txt
+echo create vdisk file="%vdrive%\snapshot.vhd" parent="%vdrive%\image.vhd" >x:\makesnapshot.txt
 echo exit >>x:\makesnapshot.txt
 REM
 REM And now make a new snapshot, using that script.
@@ -111,17 +118,18 @@ echo.
 echo STEP TWO: CREATE NEW SNAPSHOT
 echo.
 diskpart /s x:\makesnapshot.txt 
-set dprc=%errorlevel%
-if %dprc%==0 goto :dpok1
-rem
-rem If here, something went wrong creating the snapshot
-rem
+set diskpart1rc=%errorlevel%
+if %diskpart1rc%==0 goto :dpok1
+REM
+REM If here, something went wrong creating the snapshot
+REM
 echo.
 echo ERROR:  Diskpart couldn't create snapshot.vhd, return code=%dprc%
 echo look at the above Diskpart output for indications of what whent wrong.
 echo.
 exit 99
 goto :eof
+
 :dpok1
 del x:\makesnapshot.txt 2>rollbacklog.txt
 echo ... success.
@@ -138,25 +146,23 @@ REM in that I do nothing.  Otherwise, I build a new OS entry that boots from the
 REM snapshot.
 REM
 REM @echo off
-
+REM
 del x:\temp.txt 2> nul
 bcdedit |find /c "snapshot.vhd">x:\temp.txt
 set total=
 set /p total= <x:\temp.txt
 del x:\temp.txt 2>nul
-
-if Not %total%==0 ((echo ... None required, existing one will work fine.) & (echo Successfully completed rollback, reboot and you're ready to go.) & goto :goodend)
-
+if Not %total%==0 ((echo ... None required, existing one will work fine.)&(echo Successfully completed rollback, reboot and you're ready to go.)&(goto :goodend))
+REM
 REM otherwise we have to create a BCD entry
-
+REM
 set total=
 set guid=
 echo No BCD entries currently to boot from snapshot.vhd, so we'll create one...
-
-for /f "tokens=2 delims={}" %%i in ('bcdedit /create /d "Windows 7" /application osloader') do (set guid={%%i%})
+for /f "tokens=2 delims={}" %%a in ('bcdedit /create /d "Windows 10" /application osloader') do (set guid={%%a})
 bcdedit /set %GUID% device vhd=[%vdrive%]\snapshot.vhd >nul
 bcdedit /set %GUID% osdevice vhd=[%vdrive%]\snapshot.vhd >nul
-bcdedit /set %GUID% path \windows\system32\winload.exe >nul
+bcdedit /set %GUID% path \windows\system32\winload.efi >nul
 bcdedit /set %GUID% inherit {bootloadersettings} >nul
 bcdedit /set %GUID% recoveryenabled no >nul
 bcdedit /set %GUID% systemroot \windows	 >nul	
@@ -171,24 +177,24 @@ goto :goodend
 REM
 REM if here, C:\image.vhd wasn't found
 REM
-	echo The file "%vdrive%\image.vhd" isn't on this drive and
-	echo Steadier State depends on a system image named image.vhd
-	echo residing on your large drive, what is probably drive C:.
-	echo Please get an image.vhd and put it on C: before going
-	echo any further.
-	echo.
-	echo If you DON'T have an image.vhd yet, it's easy to make one.
-	echo Just get a Windows 7 Ultimate/Enterprise or any version of
-	echo Windows Server 2008 R2 exactly as you want it, then boot
-	echo that system with your Steadier State USB stick or CD.  Run
-	echo the command "cvt2vhd" and follow the instructions that'll
-	echo appear on the screen.  Once you've got your image.vhd copied
-	echo to C:, then reboot your system and choose "Roll Back Windows"
-	echo from the Boot Manager.  I'll run automatically and get your
-	echo first snapshot up and ready.
-	echo up.  Thanks!
-	exit 99
-	goto :badend
+echo The file "%vdrive%\image.vhd" isn't on this drive and
+echo Steadier State depends on a system image named image.vhd
+echo residing on your large drive, what is probably drive C:.
+echo Please get an image.vhd and put it on C: before going
+echo any further.
+echo.
+echo If you DON'T have an image.vhd yet, it's easy to make one.
+echo Just get a Windows 7 Ultimate/Enterprise or any version of
+echo Windows Server 2008 R2 exactly as you want it, then boot
+echo that system with your Steadier State USB stick or CD.  Run
+echo the command "cvt2vhd" and follow the instructions that'll
+echo appear on the screen.  Once you've got your image.vhd copied
+echo to C:, then reboot your system and choose "Roll Back Windows"
+echo from the Boot Manager.  I'll run automatically and get your
+echo first snapshot up and ready.
+echo up.  Thanks!
+exit 99
+goto :badend
 
 :goodend
 
