@@ -351,9 +351,9 @@ goto :eof
 REM
 REM listvolume.txt is the name of the script to find the volumes
 REM
-for /f "tokens=2,4" %%a in ('diskpart /s %drive%\srs\listvolume.txt') do (if %%b==Windows_SRS set volnum=%%a)
-if '!volnum!'=='' ((echo.)&(echo Unable to find any mounted volume name "Windows_SRS")&(Have you already run the cvt2vhd command?)&(goto :background))
+for /f "tokens=2,4" %%a in ('diskpart /s %drive%\srs\listvolume.txt') do (if %%b==Windows_SrS set volnum=%%a)
 set volnumrc=!errorlevel!
+if '!volnum!'=='' ((echo.)&(echo Unable to find any mounted volume name "Windows_SRS")&(Have you already run the cvt2vhd command?)&(goto :background))
 if !volnumrc!==0 ((echo Diskpart phase 4 ended successfully, vhd is volume !volnum!.)&(goto :foundvolume))
 echo.
 echo Diskpart phase 4 failed, return code !volnumrc!.
