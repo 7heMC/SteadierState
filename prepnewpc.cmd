@@ -344,21 +344,22 @@ echo.
 echo Diskpart phase 3 failed, return code !diskpart3rc!.
 echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
 echo just reported to see if there's a clue in there.  You may also get a clue from
-echo the diskpart scripts (attachvhd.txt, mountvhd.txt, listvhd.txt^) on drive %drive%.
+echo the diskpart scripts (attachvhd.txt, mountvhd.txt, listvolume.txt^) on drive %drive%.
 goto :eof
 
 :listvolume
 REM
-REM listvhd.txt is the name of the script to find the volumes
+REM listvolume.txt is the name of the script to find the volumes
 REM
-for /f "tokens=2,4" %%a in ('diskpart /s %drive%\srs\listvhd.txt') do (if %%b==Windows_SRS set volnum=%%a)
+for /f "tokens=2,4" %%a in ('diskpart /s %drive%\srs\listvolume.txt') do (if %%b==Windows_SRS set volnum=%%a)
+if '!volnum!'=='' ((echo.)&(echo Unable to find any mounted volume name "Windows_SRS")&(Have you already run the cvt2vhd command?)&(goto :background))
 set volnumrc=!errorlevel!
 if !volnumrc!==0 ((echo Diskpart phase 4 ended successfully, vhd is volume !volnum!.)&(goto :foundvolume))
 echo.
 echo Diskpart phase 4 failed, return code !volnumrc!.
 echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
 echo just reported to see if there's a clue in there.  You may also get a clue from
-echo the diskpart scripts (attachvhd.txt, mountvhd.txt, listvhd.txt^) on drive %drive%.
+echo the diskpart scripts (attachvhd.txt, mountvhd.txt, listvolume.txt^) on drive %drive%.
 goto :eof
 
 :foundvolume
@@ -375,7 +376,7 @@ echo.
 echo Diskpart phase 4 failed, return code !diskpart4rc!.
 echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
 echo just reported to see if there's a clue in there.  You may also get a clue from
-echo the diskpart scripts (attachvhd.txt, mountvhd.txt, listvhd.txt^) on drive %drive%.
+echo the diskpart scripts (attachvhd.txt, mountvhd.txt, listvolume.txt^) on drive %drive%.
 goto :eof
 
 :vhdok
@@ -570,6 +571,7 @@ echo will be moved from the external drive to your C: drive.
 echo Once you've got that image.vhd on the C: drive you can boot
 echo a system to get it ready to be able to use that VHD.  You can
 echo to it by simply restarting your computer.
+goto :eof
 
 :wrongdrive
 echo.
