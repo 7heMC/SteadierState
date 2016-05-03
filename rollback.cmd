@@ -180,7 +180,7 @@ bcdedit %bcdstore% /set %GUID% inherit {bootloadersettings} >nul
 bcdedit %bcdstore% /set %GUID% recoveryenabled no >nul
 bcdedit %bcdstore% /set %GUID% systemroot \windows	 >nul	
 bcdedit %bcdstore% /set %GUID% nx OptIn >nul
-bcdedit %bcdstore% /set detecthal yes >nul
+bcdedit %bcdstore% /set %GUID% detecthal yes >nul
 bcdedit %bcdstore% /displayorder %GUID% /addlast >nul
 bcdedit %bcdstore% /default %GUID%  >nul
 echo Success.  Reboot and from now on any changes can be un-done by running this command file again.
