@@ -450,7 +450,7 @@ bcdedit %bcdstore% /displayorder %GUID% /addlast
 bcdedit %bcdstore% /timeout 5 
 @echo off
 if %osversion%==7 if exist %tdrive%\boot\bcd goto :bcdok
-if %osversion%==10 %tdrive%\EFI\Microsoft\Boot\BCD goto :bcdok
+if %osversion%==10 if exist %tdrive%\EFI\Microsoft\Boot\BCD goto :bcdok
 echo.
 echo ++++++ BCD CREATION FAILURE +++++++++
 echo.
@@ -478,7 +478,8 @@ goto :eof
 :bcdok
 echo.
 echo ===============================================================================
-echo STEP SIX: INSTALL STEADY STATE FILES AND IMAGEX IN WINPE
+if %osversion%==7 echo STEP SIX: INSTALL STEADY STATE FILES AND IMAGEX IN WINPE
+if %osversion%==10 echo STEP SIX: INSTALL STEADY STATE FILES IN WINPE
 echo.
 echo Finally, we'll a create a folder \SDRState inside the copy of WinPE that we've
 echo just installed in your System Reserved partition and then copy the Steadier 
