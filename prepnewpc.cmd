@@ -424,9 +424,9 @@ set "bcdstore=/store bcd"
 bcdedit !bcdstore! -create {bootmgr} /d "Boot Manager"
 bcdedit !bcdstore! -set {bootmgr} device boot
 ) else (
-set "bcdstore=%tdrive%\EFI\Microsoft\Boot\BCD"
+set "bcdstore=/store %tdrive%\EFI\Microsoft\Boot\BCD"
 )
-for /f "tokens=2 delims={}" %%i in ('bcdedit %bcdstore% /create /d "Roll Back Windows" -application osloader') do (set guid={%%i%})
+for /f "tokens=2 delims={}" %%a in ('bcdedit %bcdstore% /create /d "Roll Back Windows" -application osloader') do (set guid={%%a%})
 @echo off
 REM
 REM Windows 7 can import the bcd and knock off the "/store bcd" stuff
