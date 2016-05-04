@@ -1,4 +1,5 @@
 @echo off
+setlocal ENABLEDELAYEDEXPANSION
 REM
 REM vdrive should point to the drive where image.vhd exists
 REM That SHOULD be drive C: because System Reserved -- which
@@ -82,14 +83,7 @@ REM     But if not, no problem, it'll create the first snapshot.vhd
 REM (6) Thus far I'm assuming that image.vhd is on drive C:, I THINK that's safe
 REM		(However, tests with 10 have mixed results)
 REM
-REM first verify there's a file \image.vhd on the current drive
-REM and use the drive letter %vdrive% to stop people from running the
-REM script from Windows 7 accidentally
-REM
-set drive=%~d0
-if not '%drive%'=='X:' goto :notwinpe
-REM
-REM Then check for an onboard copy of imagex and Dism.
+REM First, check for an onboard copy of imagex and Dism.
 REM
 if exist %drive%\windows\system32\imagex.exe ((set "bcdstore=")&(goto :xdriveok))
 if exist %drive%\windows\system32\Dism.exe ((set "bcdstore=/store %drive%\EFI\Microsoft\Boot\BCD")&(goto :xdriveok))
@@ -101,16 +95,7 @@ echo.
 goto :badend
 
 :xdriveok
-REM
-REM listvolume.txt is the name of the script to find the volumes
-REM
-for /f "tokens=3-5" %%a in ('diskpart /s %drive%\srs\listvolume.txt') do (if "%%b %%c"=="Physical Dr" set volletter=%%a)
-if '%volletter%'=='' goto :badend
-set vdrive=%volletter%:
-echo Checking for master image file on disk...
-if not exist %vdrive%\image.vhd goto :Noimage
-echo ... found master image (image.vhd) file on %vdrive%. 
-echo. 
+echo.
 echo STEP ONE: DELETE CURRENT SNAPSHOT
 echo.
 REM
@@ -165,13 +150,14 @@ bcdedit %bcdstore% |find /c "snapshot.vhd">%drive%\temp.txt
 set total=
 set /p total= <%drive%\temp.txt
 del %drive%\temp.txt 2>nul
-if Not %total%==0 ((echo ... None required, existing one will work fine.)&(echo Successfully completed rollback, reboot and you're ready to go.)&(goto :goodend))
+if not %total%==0 ((echo ... None required, existing one will work fine.)&(echo Successfully completed rollback, reboot and you're ready to go.)&(goto :goodend))
 REM
 REM otherwise we have to create a BCD entry
 REM
 set total=
 set guid=
 echo No BCD entries currently to boot from snapshot.vhd, so we'll create one...
+if %showcmd%==false (
 for /f "tokens=2 delims={}" %%a in ('bcdedit /create /d "Windows 10" /application osloader') do (set guid={%%a})
 bcdedit %bcdstore% /set %GUID% device vhd=[%vdrive%]\snapshot.vhd >nul
 bcdedit %bcdstore% /set %GUID% osdevice vhd=[%vdrive%]\snapshot.vhd >nul
@@ -181,32 +167,40 @@ bcdedit %bcdstore% /set %GUID% recoveryenabled no >nul
 bcdedit %bcdstore% /set %GUID% systemroot \windows	 >nul	
 bcdedit %bcdstore% /set %GUID% nx OptIn >nul
 bcdedit %bcdstore% /set %GUID% detecthal yes >nul
-bcdedit %bcdstore% /displayorder %GUID% /addlast >nul
+bcdedit %bcdstore% /displayorder %GUID% >nul
 bcdedit %bcdstore% /default %GUID%  >nul
-echo Success.  Reboot and from now on any changes can be un-done by running this command file again.
+echo Rebooting...Hopefully it worked. If not, there was an error with bcdedit.
+goto :badend
+) else (
+for /f "tokens=2 delims={}" %%a in ('bcdedit /create /d "Windows 10" /application osloader') do (set guid={%%a})
+bcdedit %bcdstore% /set %GUID% device vhd=[%vdrive%]\snapshot.vhd
+if not !errorlevel!==0 goto :bcderror
+bcdedit %bcdstore% /set %GUID% osdevice vhd=[%vdrive%]\snapshot.vhd
+if not !errorlevel!==0 goto :bcderror
+bcdedit %bcdstore% /set %GUID% path \windows\system32\winload.efi
+if not !errorlevel!==0 goto :bcderror
+bcdedit %bcdstore% /set %GUID% inherit {bootloadersettings}
+if not !errorlevel!==0 goto :bcderror
+bcdedit %bcdstore% /set %GUID% recoveryenabled no
+if not !errorlevel!==0 goto :bcderror
+bcdedit %bcdstore% /set %GUID% systemroot \windows	
+if not !errorlevel!==0 goto :bcderror
+bcdedit %bcdstore% /set %GUID% nx OptIn
+if not !errorlevel!==0 goto :bcderror
+bcdedit %bcdstore% /set %GUID% detecthal yes
+if not !errorlevel!==0 goto :bcderror
+bcdedit %bcdstore% /displayorder %GUID%
+if not !errorlevel!==0 goto :bcderror
+bcdedit %bcdstore% /default %GUID%
+if not !errorlevel!==0 goto :bcderror
+echo Success. The new osloader entry was created in the Windows Boot Manager.
 goto :goodend
+)
 
-:Noimage
-REM
-REM if here, C:\image.vhd wasn't found
-REM
-echo The file "%vdrive%\image.vhd" isn't on this drive and
-echo Steadier State depends on a system image named image.vhd
-echo residing on your large drive, what is probably drive C:.
-echo Please get an image.vhd and put it on C: before going
-echo any further.
+:bcderror
 echo.
-echo If you DON'T have an image.vhd yet, it's easy to make one.
-echo Just get a Windows 7 Ultimate/Enterprise or any version of
-echo Windows Server 2008 R2 exactly as you want it, then boot
-echo that system with your Steadier State USB stick or CD.  Run
-echo the command "cvt2vhd" and follow the instructions that'll
-echo appear on the screen.  Once you've got your image.vhd copied
-echo to C:, then reboot your system and choose "Roll Back Windows"
-echo from the Boot Manager.  I'll run automatically and get your
-echo first snapshot up and ready.
-echo up.  Thanks!
-exit 99
+echo There was an issue editing the bcd store. The system will NOT boot to snapshot.
+echo.
 goto :badend
 
 :notwinpe

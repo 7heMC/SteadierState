@@ -8,17 +8,29 @@ REM is running as X:.
 REM It also means that the remaining large drive with the
 REM label "Physical Drive" is lettered C:.
 REM
+set drive=%~d0
+if not '%drive%'=='X:' goto :notwinpe
 set path=%path%X:\srs;
 set bootsource=Hard Drive
 echo Windows PE 3.0 booted from local hard drive.
+REM
+REM Verify there's a file \image.vhd on the current drive
+REM and use the drive letter %vdrive% to stop people from running the
+REM script from Windows 7 accidentally
+REM
+REM listvolume.txt is the name of the script to find the volumes
+REM
+for /f "tokens=3-5" %%a in ('diskpart /s %drive%\srs\listvolume.txt') do (if "%%b %%c"=="Physical Dr" set volletter=%%a)
+if '%volletter%'=='' goto :badend
+set vdrive=%volletter%:
 REM
 REM gather state information
 REM
 cd \srs
 set noimage=false
-If not exist c:\image.vhd set noimage=true
+If not exist %vdrive%\image.vhd set noimage=true
 set nosnap=false
-If not exist c:\snapshot.vhd set nosnap=true
+If not exist %vdrive%\snapshot.vhd set nosnap=true
 set showcmd=false
 if exist x:\srs\noauto.txt set showcmd=true
 if exist c:\noauto.txt set showcmd=true 
@@ -68,17 +80,17 @@ REM if here, \image.vhd wasn't found
 REM
 echo.
 echo Hi.  I see that you've prepared this computer's hard disk to use Steadier
-echo State, but haven't yet put an image on C:.
+echo State, but haven't yet put an image on %vdrive%.
 echo.
 echo Steadier State depends on a system image named image.vhd residing on your
-echo large partition, what is probably drive C:.  Please get an image.vhd and put
-echo it on C: before going any further.
+echo large partition, what is probably drive %vdrive%.  Please get an image.vhd and put
+echo it on %vdrive% before going any further.
 echo.
 echo If you DON'T have an image.vhd yet, it's easy to make one.  Just get a
 echo Windows 7 Ultimate/Enterprise or any version of Windows Server 2008 R2
 echo exactly as you want it, then boot that system with your Steadier State USB
 echo stick or CD.  Run the command "cvt2vhd" and follow the instructions that'll
-echo appear on the screen.  Once you've got your image.vhd copied to C:\, then run
+echo appear on the screen.  Once you've got your image.vhd copied to %vdrive%\, then run
 echo "rollback"  from the command line and it'll get your snapshot set up so that
 echo you can use Steadier State to instantly roll back your computer to a 
 echo snapshot.  Thanks!

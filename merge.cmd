@@ -28,12 +28,6 @@ echo.
 if not '%mergeresponse%'=='y' ((echo Exiting...)&(goto :eof))
 echo Okay, then let's continue.
 echo.
-REM
-REM verify that files c:\image.vhd and c:\snapshot.vhd exist
-REM
-echo Checking for the base image and snapshot files.
-if not exist C:\image.vhd ((echo.) & (echo I couldn't find C:\image.vhd so I can't continue; exiting.) & (goto :eof))
-if not exist C:\snapshot.vhd ((echo.) & (echo I couldn't find C:\snapshot.vhd so I can't continue; exiting.) & (goto :eof))
 REM 
 REM if we got here, time to get to work: merge the files, delete the old snapshot, create a new one.
 REM
@@ -43,27 +37,27 @@ echo and Diskpart will offer "100 percent" for progress information, BUT the wai
 echo to finish merging the VHDs AFTER that "100 percent" message can be one to seven
 echo minutes depending on disk speeds, memory, the volume of changes etc.)
 echo.
-del mergesnaps.txt 2> nul
-echo select vdisk file="C:\snapshot.vhd" >mergesnaps.txt
+del mergesnaps.txt
+echo select vdisk file="%vdrive%\snapshot.vhd" >mergesnaps.txt
 echo merge vdisk depth=1 >>mergesnaps.txt
 echo exit >>mergesnaps.txt
 diskpart /s mergesnaps.txt 
-del mergesnaps.txt 2> nul
+del mergesnaps.txt
 echo.
 echo Deleting old snapshot...
 echo.
-del C:\snapshot.vhd
+del %vdrive%\snapshot.vhd
 REM
 REM Next, prepare the script for diskpart
 REM
-del makesnapshot.txt 2>nul
-echo create vdisk file="C:\snapshot.vhd" parent="C:\image.vhd" > makesnapshot.txt
+del makesnapshot.txt
+echo create vdisk file="%vdrive%\snapshot.vhd" parent="%vdrive%\image.vhd" > makesnapshot.txt
 echo exit >>makesnapshot.txt
 REM
 REM And now make a new snapshot, using that script.
 REM
 diskpart /s makesnapshot.txt 
-del makesnapshot.txt 2>nul
+del makesnapshot.txt
 echo.
 echo Complete.  Image.vhd now contains the old snapshot's information, and that
 echo information cannot be lost by a future rollback. It's safe to reboot now.
