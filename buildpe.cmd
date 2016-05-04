@@ -300,12 +300,6 @@ echo.
 echo First, clean up any mess from previous BUILDPE runs.
 echo.
 REM
-REM Let's get to work
-REM First, delete any existing WinPE folders or ISO files
-REM
-rd %fname% /s /q 2>NUL
-del %isofilespec% 2>NUL
-REM
 REM create DL, drive letter, add colon
 REM
 set dl=%usbdriveletter:~0,1%:
@@ -324,11 +318,19 @@ echo Setting ADK environment variables >>%logdir%\startlog.txt
 call "%ADKBase%\Deployment Tools\DandISetEnv.bat" >%logdir%\01setenv.txt
 )
 popd
-
+REM
+REM Cleanup any previous mount points and then mount boot.wim
+REM
+if %osresp%==10 Dism /Cleanup-Mountpoints
+REM
+REM Let's get to work
+REM First, delete any existing WinPE folders or ISO files
+REM
+rd %fname% /s /q 2>NUL
+del %isofilespec% 2>NUL
 echo Creating WinPE workspace >>%logdir%\startlog.txt
 call copype %arch% %fname% >%logdir%\02createwinpeworkspace.txt
 popd
-
 echo Next, mount that WinPE so we can install some Steadier State files
 echo into that WinPE.  This can take a minute or two.
 echo.
