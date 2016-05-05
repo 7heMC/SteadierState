@@ -125,7 +125,7 @@ REM
 REM Find an available drive letter for the Steadier State Tools Partition
 REM srsdrive = Partition for the Steadier State Tools (SrS tools)
 REM
-for %%a in (d e f g h i j k l m n o p q r s t u v w y z) do (if not exist %%a:\ ((set srsdrive=%%a)&goto :createsrsdrive)))
+for %%a in (d e f g h i j k l m n o p q r s t u v w y z) do (if not exist %%a:\ ((set srsdrive=%%a)&(goto :createsrsdrive)))
 echo.
 echo Error:  I need a drive letter for the Steadier State Tools (SrS tools)
 echo but could not find one in the following range C-W,Y,Z.  I can't do the
