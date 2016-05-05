@@ -141,7 +141,7 @@ REM
 echo select disk 0 >%actdrive%\diskpartsrs.txt
 echo clean >>%actdrive%\diskpartsrs.txt
 echo convert gpt >>%actdrive%\diskpartsrs.txt
-echo create partition primary size=300 >>%actdrive%\diskpartsrs.txt
+echo create partition primary size=1000 >>%actdrive%\diskpartsrs.txt
 echo format quick fs=ntfs label="SrS tools" >>%actdrive%\diskpartsrs.txt
 echo assign letter=%srsdrive% >>%actdrive%\diskpartsrs.txt
 echo set id="de94bba4-06d1-4d40-a16a-bfd50179d6ac" >>%actdrive%\diskpartsrs.txt
