@@ -159,39 +159,39 @@ set guid=
 echo No BCD entries currently to boot from snapshot.vhd, so we'll create one...
 if %showcmd%==false (
 for /f "tokens=2 delims={}" %%a in ('bcdedit /create /d "Windows 10" /application osloader') do (set guid={%%a})
-bcdedit %bcdstore% /set %GUID% device vhd=[%vdrive%]\snapshot.vhd >nul
-bcdedit %bcdstore% /set %GUID% osdevice vhd=[%vdrive%]\snapshot.vhd >nul
-bcdedit %bcdstore% /set %GUID% path \windows\system32\winload.efi >nul
-bcdedit %bcdstore% /set %GUID% inherit {bootloadersettings} >nul
-bcdedit %bcdstore% /set %GUID% recoveryenabled no >nul
-bcdedit %bcdstore% /set %GUID% systemroot \windows	 >nul	
-bcdedit %bcdstore% /set %GUID% nx OptIn >nul
-bcdedit %bcdstore% /set %GUID% detecthal yes >nul
-bcdedit %bcdstore% /displayorder %GUID% >nul
-bcdedit %bcdstore% /default %GUID%  >nul
+bcdedit %bcdstore% /set %guid% device vhd=[%vdrive%]\snapshot.vhd >nul
+bcdedit %bcdstore% /set %guid% osdevice vhd=[%vdrive%]\snapshot.vhd >nul
+bcdedit %bcdstore% /set %guid% path \windows\system32\winload.efi >nul
+bcdedit %bcdstore% /set %guid% inherit {bootloadersettings} >nul
+bcdedit %bcdstore% /set %guid% recoveryenabled no >nul
+bcdedit %bcdstore% /set %guid% systemroot \windows	 >nul	
+bcdedit %bcdstore% /set %guid% nx OptIn >nul
+bcdedit %bcdstore% /set %guid% detecthal yes >nul
+bcdedit %bcdstore% /displayorder %guid% >nul
+bcdedit %bcdstore% /default %guid%  >nul
 echo Rebooting...Hopefully it worked. If not, there was an error with bcdedit.
 goto :badend
 ) else (
 for /f "tokens=2 delims={}" %%a in ('bcdedit /create /d "Windows 10" /application osloader') do (set guid={%%a})
-bcdedit %bcdstore% /set %GUID% device vhd=[%vdrive%]\snapshot.vhd
+bcdedit %bcdstore% /set %guid% device vhd=[%vdrive%]\snapshot.vhd
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %GUID% osdevice vhd=[%vdrive%]\snapshot.vhd
+bcdedit %bcdstore% /set %guid% osdevice vhd=[%vdrive%]\snapshot.vhd
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %GUID% path \windows\system32\winload.efi
+bcdedit %bcdstore% /set %guid% path \windows\system32\winload.efi
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %GUID% inherit {bootloadersettings}
+bcdedit %bcdstore% /set %guid% inherit {bootloadersettings}
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %GUID% recoveryenabled no
+bcdedit %bcdstore% /set %guid% recoveryenabled no
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %GUID% systemroot \windows	
+bcdedit %bcdstore% /set %guid% systemroot \windows	
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %GUID% nx OptIn
+bcdedit %bcdstore% /set %guid% nx OptIn
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %GUID% detecthal yes
+bcdedit %bcdstore% /set %guid% detecthal yes
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /displayorder %GUID%
+bcdedit %bcdstore% /displayorder %guid%
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /default %GUID%
+bcdedit %bcdstore% /default %guid%
 if not !errorlevel!==0 goto :bcderror
 echo Success. The new osloader entry was created in the Windows Boot Manager.
 goto :goodend
