@@ -125,7 +125,7 @@ REM
 REM Find an available drive letter for the Steadier State Tools Partition
 REM srsdrive = Partition for the Steadier State Tools (SrS tools)
 REM
-for %%a in (d e f g h i j k l m n o p q r s t u v w y z) do (if not exist %%a:\ ((set srsdrive=%%a)&(if goto :createsrsdrive)))
+for %%a in (d e f g h i j k l m n o p q r s t u v w y z) do (if not exist %%a:\ ((set srsdrive=%%a)&goto :createsrsdrive)))
 echo.
 echo Error:  I need a drive letter for the Steadier State Tools (SrS tools)
 echo but could not find one in the following range C-W,Y,Z.  I can't do the
@@ -150,7 +150,7 @@ echo rescan >>%actdrive%\diskpartsrs.txt
 echo exit >>%actdrive%\diskpartsrs.txt
 diskpart /s %actdrive%\diskpartsrs.txt
 set dispartsrsrc=%errorlevel%
-if %dispartsrsrc%==0 ((echo Diskpart successfully created SrS Tools Partition.)&(echo We will use %srsdrive%:)&(goto :findefidrive))
+if %dispartsrsrc%==0 ((set srsdrive=%srsdrive%:)&(echo Diskpart successfully created SrS Tools Partition.)&(echo We will use !srsdrive!)&(goto :findefidrive))
 echo.
 echo Diskpart failed to create the SrS Tools Partition, return code %dispartsrsrc%.
 echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
@@ -184,7 +184,7 @@ echo rescan >>%actdrive%\diskpartefi.txt
 echo exit >>%actdrive%\diskpartefi.txt
 diskpart /s %actdrive%\diskpartefi.txt
 set dispartefirc=%errorlevel%
-if %dispartefirc%==0 ((echo Diskpart successfully created UEFI System Partition.)&(echo We will use %efidrive%:)&(goto :createmsrdrive))
+if %dispartefirc%==0 ((set efidrive=%efidrive%:)&(echo Diskpart successfully created UEFI System Partition.)&(echo We will use !efidrive!)&(goto :createmsrdrive))
 echo.
 echo Diskpart failed to create the UEFI System Partition, return code %dispartefirc%.
 echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
@@ -234,7 +234,7 @@ echo rescan >>%actdrive%\diskpartphy.txt
 echo exit >>%actdrive%\diskpartphy.txt
 diskpart /s %actdrive%\diskpartphy.txt
 set dispartphyrc=%errorlevel%
-if %dispartphyrc%==0 ((echo Diskpart successfully created Physical Disk Partition)&(echo using the remaining space on the hard drive.)&(set phydrive=%phydrive%:)&(goto :findvhddrive))
+if %dispartphyrc%==0 ((set phydrive=%phydrive%:)&(echo Diskpart successfully created Physical Disk Partition at !phydrive!)&(echo using the remaining space on the hard drive.)&(goto :findvhddrive))
 echo.
 echo Diskpart failed to create the Physical Disk Partition, return code %dispartphyrc%.
 echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
@@ -247,7 +247,7 @@ REM
 REM Find an available drive letter that can be used to mount the image.vhd
 REM vhddrive = The drive letter used to mount image.vhd
 REM
-for %%a in (d e f g h i j k l m n o p q r s t u v w y z) do (if not exist %%a:\ ((set vhddrive=%%a)&(echo Found !vdrive!: as an available drive letter for the vhd.)&(goto :copyvhd)))
+for %%a in (d e f g h i j k l m n o p q r s t u v w y z) do (if not exist %%a:\ ((set vhddrive=%%a)&(echo Found !vhddrive!: as an available drive letter for the vhd.)&(goto :copyvhd)))
 echo.
 echo Error:  I need a drive letter to mount image.vhd,
 echo but could not find one in the following range C-W,Y,Z.
