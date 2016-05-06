@@ -230,8 +230,6 @@ echo select disk 0 >%actdrive%\diskpartphy.txt
 echo create partition primary  >>%actdrive%\diskpartphy.txt
 echo format quick fs=ntfs label="Physical_Drive" >>%actdrive%\diskpartphy.txt
 echo assign letter=%phydrive% >>%actdrive%\diskpartphy.txt
-echo set id="de94bba4-06d1-4d40-a16a-bfd50179d6ac" >>%actdrive%\diskpartsrs.txt
-echo gpt attributes=0x8000000000000001 >>%actdrive%\diskpartsrs.txt
 echo rescan >>%actdrive%\diskpartphy.txt
 echo exit >>%actdrive%\diskpartphy.txt
 diskpart /s %actdrive%\diskpartphy.txt
