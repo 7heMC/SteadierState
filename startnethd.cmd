@@ -21,7 +21,7 @@ echo Windows PE 3.0 booted from local hard drive.
 REM
 REM listvolume.txt is the name of the script to find the volumes
 REM
-for /f "tokens=2-4" %%a in ('diskpart /s %actdrive%\srs\listvolume.txt') do (if "%%b %%c"=="Physical Dr" set phynum=%%a)
+for /f "tokens=2-4" %%a in ('diskpart /s %actdrive%\srs\listvolume.txt') do ((if %%b==Physical_D set phynum=%%a)&(if %%c==Physical_D set phynum=%%a))
 set phynumrc=%errorlevel%
 if '%phynum%'=='' ((echo.)&(echo Unable to find any volume named "Physical Drive")&(goto :badend))
 if %phynumrc%==0 ((echo Physical Drive is mounted at %phynum%.)&(echo Now checking to make sure imagex or dism exists.)&(goto :findphydrive))
