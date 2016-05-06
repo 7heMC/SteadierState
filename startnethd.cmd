@@ -21,7 +21,7 @@ echo Windows PE 3.0 booted from local hard drive.
 REM
 REM listvolume.txt is the name of the script to find the volumes
 REM
-for /f "tokens=2-4" %%a in ('diskpart /s %actdrive%\srs\listvolume.txt') do ((if %%b==Physical_D set phynum=%%a)&(if %%c==Physical_D set phynum=%%a))
+for /f "tokens=2-4" %%a in ('diskpart /s %actdrive%\srs\listvolume.txt') do ((if %%b==Physical_Dr set phynum=%%a)&(if %%c==Physical_Dr set phynum=%%a))
 set phynumrc=%errorlevel%
 if '%phynum%'=='' ((echo.)&(echo Unable to find any volume named "Physical Drive")&(goto :badend))
 if %phynumrc%==0 ((echo Physical Drive is mounted at %phynum%.)&(echo Now checking to make sure imagex or dism exists.)&(goto :findphydrive))
@@ -48,7 +48,7 @@ echo rescan >>%actdrive%\diskpartphy.txt
 echo exit >>%actdrive%\diskpartphy.txt
 diskpart /s %actdrive%\diskpartphy.txt
 set dispartphyrc=%errorlevel%
-if %dispartphyrc%==0 ((set phydrive=%phydrive%:)&(echo Diskpart successfully mounted the Physical Drive Partition.)&(echo using !phydrive!)&(del %actdrive%\diskpartefi.txt)&(goto :phycheckdrive))
+if %dispartphyrc%==0 ((set phydrive=%phydrive%:)&(echo Diskpart successfully mounted the Physical Drive Partition.)&(echo using !phydrive!)&(del %actdrive%\diskpartphy.txt)&(goto :oscheck))
 echo.
 echo Diskpart failed to create the UEFI System Partition, return code %dispartphyrc%.
 echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
@@ -73,7 +73,7 @@ goto :badend
 REM
 REM Then, check for UEFI partition and an onboard copy of imagex and Dism.
 REM
-for /f "tokens=2,3" %%a in ('diskpart /s %actdrive%\srs\listvolume.txt') do (if %%b==System_UEFI set efinum=%%a)
+for /f "tokens=2,3" %%a in ('diskpart /s %actdrive%\srs\listvolume.txt') do (if %%b==SYSTEM_UEFI set efinum=%%a)
 set efinumrc=%errorlevel%
 if '%efinum%'=='' ((echo.)&(echo Unable to find any mounted volume name "System UEFI")&(goto :badend))
 if %efinumrc%==0 ((echo System_UEFI is volume #%efinum%.)&(goto :findefidrive))
@@ -100,7 +100,7 @@ echo rescan >>%actdrive%\diskpartefi.txt
 echo exit >>%actdrive%\diskpartefi.txt
 diskpart /s %actdrive%\diskpartefi.txt
 set dispartefirc=%errorlevel%
-if %dispartefirc%==0 ((set efidrive=%efidrive%:)&(echo Diskpart successfully mounted UEFI System Partition.)&(echo using !efidrive!)&(del %actdrive%\diskpartefi.txt)&(goto :vhdcheck))
+if %dispartefirc%==0 ((set efidrive=%efidrive%:)&(echo Diskpart successfully mounted UEFI System Partition.)&(echo using %efidrive%)&(set "bcdstore=/store %efidrive%\EFI\Microsoft\Boot\BCD")&(del %actdrive%\diskpartefi.txt)&(goto :vhdcheck))
 echo.
 echo Diskpart failed to create the UEFI System Partition, return code %dispartefirc%.
 echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
