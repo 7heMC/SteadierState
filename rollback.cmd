@@ -78,23 +78,11 @@ REM (1) Must have WinPE installed in the 1GB partition, booted from it (X:)
 REM (2) Computer must have been booted from that on-disk WinPE so that it's running on X:
 REM (3) PC must have the support Steadier State files on x:\srs
 REM (4) image.vhd, a Win 7/10 image, must be in the root on the physical drive
-REM (5) if you've run this before, then it'll wipe %vdrive%\snapshot.vhd
+REM (5) if you've run this before, then it'll wipe %phydrive%\snapshot.vhd
 REM     But if not, no problem, it'll create the first snapshot.vhd
 REM (6) Thus far I'm assuming that image.vhd is on drive C:, I THINK that's safe
 REM		(However, tests with 10 have mixed results)
 REM
-REM First, check for an onboard copy of imagex and Dism.
-REM
-if exist %drive%\windows\system32\imagex.exe ((set "bcdstore=")&(goto :xdriveok))
-if exist %drive%\windows\system32\Dism.exe ((set "bcdstore=/store %drive%\EFI\Microsoft\Boot\BCD")&(goto :xdriveok))
-echo.
-echo Error: imagex.exe and Dism.exe are missing from WinPE Please rebuild
-echo your Steadier State install USB stick or CD ISO with buildpe.cmd and
-echo use that new device to boot this system and try again.
-echo.
-goto :badend
-
-:xdriveok
 echo.
 echo STEP ONE: DELETE CURRENT SNAPSHOT
 echo.
@@ -102,20 +90,20 @@ REM
 REM The image file is there, so we're ready to go
 REM Let's delete the snapshot
 REM
-del %vdrive%\snapshot.vhd 2>nul
+del %phydrive%\snapshot.vhd 2>nul
 REM
 REM Next, prepare the script for diskpart
 REM
-del %drive%\makesnapshot.txt 2>nul
-echo create vdisk file="%vdrive%\snapshot.vhd" parent="%vdrive%\image.vhd" >%drive%\makesnapshot.txt
-echo exit >>%drive%\makesnapshot.txt
+del %actdrive%\makesnapshot.txt 2>nul
+echo create vdisk file="%phydrive%\snapshot.vhd" parent="%phydrive%\image.vhd" >%actdrive%\makesnapshot.txt
+echo exit >>%actdrive%\makesnapshot.txt
 REM
 REM And now make a new snapshot, using that script.
 REM
 echo.
 echo STEP TWO: CREATE NEW SNAPSHOT
 echo.
-diskpart /s %drive%\makesnapshot.txt 
+diskpart /s %actdrive%\makesnapshot.txt 
 set diskpart1rc=%errorlevel%
 if %diskpart1rc%==0 goto :diskpart1ok
 REM
@@ -125,11 +113,10 @@ echo.
 echo ERROR:  Diskpart couldn't create snapshot.vhd, return code=%diskpart1rc%
 echo look at the above Diskpart output for indications of what whent wrong.
 echo.
-exit 99
-goto :eof
+goto :badend
 
 :diskpart1ok
-del %drive%\makesnapshot.txt 2>rollbacklog.txt
+del %actdrive%\makesnapshot.txt 2>rollbacklog.txt
 echo ... success.
 echo Looking to see if a new BCD entry necessary...
 echo.
@@ -139,17 +126,17 @@ REM the snapshot, but we don't want to do that if one already
 REM exists!
 REM What I'm about to do is to take the output of the "bcdedit" command looking for
 REM the string "snapshot.vhd."  If I find it, I'm assuming that we already have
-REM a boot-from-VHD entry in the BCD that tries to boot from [%vdrive%]\snapshot.vhd and
+REM a boot-from-VHD entry in the BCD that tries to boot from [%phydrive%]\snapshot.vhd and
 REM in that I do nothing.  Otherwise, I build a new OS entry that boots from the
 REM snapshot.
 REM
 REM @echo off
 REM
-del %drive%\temp.txt 2>nul
-bcdedit %bcdstore% |find /c "snapshot.vhd">%drive%\temp.txt
+del %actdrive%\temp.txt 2>nul
+bcdedit %bcdstore% |find /c "snapshot.vhd">%actdrive%\temp.txt
 set total=
-set /p total= <%drive%\temp.txt
-del %drive%\temp.txt 2>nul
+set /p total= <%actdrive%\temp.txt
+del %actdrive%\temp.txt 2>nul
 if not %total%==0 ((echo ... None required, existing one will work fine.)&(echo Successfully completed rollback, reboot and you're ready to go.)&(goto :goodend))
 REM
 REM otherwise we have to create a BCD entry
@@ -159,8 +146,8 @@ set guid=
 echo No BCD entries currently to boot from snapshot.vhd, so we'll create one...
 if %showcmd%==false (
 for /f "tokens=2 delims={}" %%a in ('bcdedit /create /d "Windows 10" /application osloader') do (set guid={%%a})
-bcdedit %bcdstore% /set %guid% device vhd=[%vdrive%]\snapshot.vhd >nul
-bcdedit %bcdstore% /set %guid% osdevice vhd=[%vdrive%]\snapshot.vhd >nul
+bcdedit %bcdstore% /set %guid% device vhd=[%phydrive%]\snapshot.vhd >nul
+bcdedit %bcdstore% /set %guid% osdevice vhd=[%phydrive%]\snapshot.vhd >nul
 bcdedit %bcdstore% /set %guid% path \windows\system32\winload.efi >nul
 bcdedit %bcdstore% /set %guid% inherit {bootloadersettings} >nul
 bcdedit %bcdstore% /set %guid% recoveryenabled no >nul
@@ -170,12 +157,12 @@ bcdedit %bcdstore% /set %guid% detecthal yes >nul
 bcdedit %bcdstore% /displayorder %guid% >nul
 bcdedit %bcdstore% /default %guid%  >nul
 echo Rebooting...Hopefully it worked. If not, there was an error with bcdedit.
-goto :badend
+goto :eof
 ) else (
 for /f "tokens=2 delims={}" %%a in ('bcdedit /create /d "Windows 10" /application osloader') do (set guid={%%a})
-bcdedit %bcdstore% /set %guid% device vhd=[%vdrive%]\snapshot.vhd
+bcdedit %bcdstore% /set %guid% device vhd=[%phydrive%]\snapshot.vhd
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %guid% osdevice vhd=[%vdrive%]\snapshot.vhd
+bcdedit %bcdstore% /set %guid% osdevice vhd=[%phydrive%]\snapshot.vhd
 if not !errorlevel!==0 goto :bcderror
 bcdedit %bcdstore% /set %guid% path \windows\system32\winload.efi
 if not !errorlevel!==0 goto :bcderror
@@ -201,6 +188,7 @@ goto :goodend
 echo.
 echo There was an issue editing the bcd store. The system will NOT boot to snapshot.
 echo.
+pause
 goto :badend
 
 :notwinpe
@@ -208,8 +196,23 @@ echo.
 echo This can only be run from WinPE. However, it does not appear that
 echo the system is running from the X: drive. Please restart and boot
 echo into the Rollback Windows environment.
+
+:badend
+set rollbackrc=99
+REM
+REM After rollback.cmd is complete, delete noauto.txt file so that it will 
+REM autoroll next time
+REM
+if exist %noadrive%\noauto.txt del %noadrive%\noauto.txt
+if exist %noadrive%\srs\noauto.txt del %noadrive%\srs\noauto.txt
 goto :eof
 
 :goodend
-
-:badend
+set rollbackrc=
+REM
+REM After rollback.cmd is complete, delete noauto.txt file so that it will 
+REM autoroll next time
+REM
+if exist %noadrive%\noauto.txt del %noadrive%\noauto.txt
+if exist %noadrive%\srs\noauto.txt del %noadrive%\srs\noauto.txt
+goto :eof

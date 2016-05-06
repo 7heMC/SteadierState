@@ -178,7 +178,7 @@ REM == 2. System partition =========================
 REM
 echo select disk 0 >%actdrive%\diskpartefi.txt
 echo create partition efi size=100 >>%actdrive%\diskpartefi.txt
-echo format quick fs=fat32 label="System" >>%actdrive%\diskpartefi.txt
+echo format quick fs=fat32 label="System_UEFI" >>%actdrive%\diskpartefi.txt
 echo assign letter=%efidrive% >>%actdrive%\diskpartefi.txt
 echo rescan >>%actdrive%\diskpartefi.txt
 echo exit >>%actdrive%\diskpartefi.txt
