@@ -178,7 +178,7 @@ REM == 2. System partition =========================
 REM
 echo select disk 0 >%actdrive%\diskpartefi.txt
 echo create partition efi size=100 >>%actdrive%\diskpartefi.txt
-echo format quick fs=fat32 label="System_UEFI" >>%actdrive%\diskpartefi.txt
+echo format quick fs=fat32 label="SYSTEM_UEFI" >>%actdrive%\diskpartefi.txt
 echo assign letter=%efidrive% >>%actdrive%\diskpartefi.txt
 echo rescan >>%actdrive%\diskpartefi.txt
 echo exit >>%actdrive%\diskpartefi.txt
@@ -230,6 +230,8 @@ echo select disk 0 >%actdrive%\diskpartphy.txt
 echo create partition primary  >>%actdrive%\diskpartphy.txt
 echo format quick fs=ntfs label="Physical Drive" >>%actdrive%\diskpartphy.txt
 echo assign letter=%phydrive% >>%actdrive%\diskpartphy.txt
+echo set id="de94bba4-06d1-4d40-a16a-bfd50179d6ac" >>%actdrive%\diskpartsrs.txt
+echo gpt attributes=0x8000000000000001 >>%actdrive%\diskpartsrs.txt
 echo rescan >>%actdrive%\diskpartphy.txt
 echo exit >>%actdrive%\diskpartphy.txt
 diskpart /s %actdrive%\diskpartphy.txt
@@ -536,7 +538,8 @@ if %osversion%==10 bcdedit %bcdstore% /set %guid% path \windows\system32\boot\wi
 bcdedit %bcdstore% /set %guid% systemroot \windows
 bcdedit %bcdstore% /set %guid% winpe yes
 bcdedit %bcdstore% /set %guid% detecthal yes 
-bcdedit %bcdstore% /displayorder %guid% /addlast 
+bcdedit %bcdstore% /displayorder %guid% /addlast
+bcdedit %bcdstore% /default %guid%
 bcdedit %bcdstore% /timeout 1 
 @echo off
 if %osversion%==7 if exist %srsdrive%\boot\bcd goto :bcdok

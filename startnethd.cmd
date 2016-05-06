@@ -1,5 +1,6 @@
 wpeinit
 @echo off
+setlocal ENABLEDELAYEDEXPANSION
 REM
 REM As we're (1) booting WinPE and (2) booting from a hard
 REM disk image rather than a RAMdisk, we can be sure that 
@@ -15,13 +16,15 @@ if not '%actdrive%'=='X:' goto :notwinpe
 set path=%path%X:\srs;
 set bootsource=Hard Drive
 echo Windows PE 3.0 booted from local hard drive.
+
+:findphynum
 REM
 REM listvolume.txt is the name of the script to find the volumes
 REM
-for /f "tokens=3-5" %%a in ('diskpart /s %actdrive%\srs\listvolume.txt') do (if "%%b %%c"=="Physical Dr" set phydrive=%%a:)
-set phydriverc=%errorlevel%
-if '%phydrive%'=='' ((echo.)&(echo Unable to find any volume named "Physical Drive")&(goto :badend))
-if %phydriverc%==0 ((echo Physical Drive is mounted at %phydrive%.)&(echo Now checking to make sure imagex or dism exists.)&(goto :oscheck))
+for /f "tokens=2-4" %%a in ('diskpart /s %actdrive%\srs\listvolume.txt') do (if "%%b %%c"=="Physical Dr" set phynum=%%a)
+set phynumrc=%errorlevel%
+if '%phynum%'=='' ((echo.)&(echo Unable to find any volume named "Physical Drive")&(goto :badend))
+if %phynumrc%==0 ((echo Physical Drive is mounted at %phynum%.)&(echo Now checking to make sure imagex or dism exists.)&(goto :findphydrive))
 echo.
 echo Can't find the Physical Drive's drive letter.  I can't fix this so I've got
 echo to exit.  Please check the error message and try recreating steadier state
@@ -29,12 +32,36 @@ echo from the beginning.
 echo.
 goto :badend
 
+:findphydrive
+for %%a in (d e f g h i j k l m n o p q r s t u v w y z) do (if not exist %%a:\ ((set phydrive=%%a)&(echo Found !phydrive!: as an available drive letter for the Physical Drive.)&(goto :phymount)))
+echo.
+echo Error:  I need a drive letter for the Physical Drive Partition,
+echo but could not find one in the following range D-W,Y,Z.
+echo I can't do the job without a free drive letter, so I've got to stop.
+echo.
+goto :badend
+
+:phymount
+echo select volume %phynum% >%actdrive%\diskpartphy.txt
+echo assign letter=%phydrive% >>%actdrive%\diskpartphy.txt
+echo rescan >>%actdrive%\diskpartphy.txt
+echo exit >>%actdrive%\diskpartphy.txt
+diskpart /s %actdrive%\diskpartphy.txt
+set dispartphyrc=%errorlevel%
+if %dispartphyrc%==0 ((set phydrive=%phydrive%:)&(echo Diskpart successfully mounted the Physical Drive Partition.)&(echo using !phydrive!)&(del %actdrive%\diskpartefi.txt)&(goto :phycheckdrive))
+echo.
+echo Diskpart failed to create the UEFI System Partition, return code %dispartphyrc%.
+echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
+echo just reported to see if there's a clue in there.  You may also get a clue from
+echo the diskpart script: %actdrive%\diskpartefi.txt.
+goto :eof
+
 :oscheck
 REM
 REM Verify the OS by checking which tool has been used
 REM
 if exist %actdrive%\windows\system32\imagex.exe ((set osversion=7)&(set "bcdstore=")&(echo Now checking to make sure the vhd files exist.)&(goto :vhdcheck))
-if exist %actdrive%\windows\system32\Dism.exe ((set osversion=10)&(echo Now checking to make sure an efi partition exists.)&(goto :eficheck))
+if exist %actdrive%\windows\system32\Dism.exe ((set osversion=10)&(echo Now checking to make sure an efi partition exists.)&(goto :findefinum))
 echo.
 echo Error: imagex.exe and Dism.exe are missing from WinPE Please rebuild
 echo your Steadier State install USB stick or CD ISO with buildpe.cmd and
@@ -42,20 +69,44 @@ echo use that new device to boot this system and try again.
 echo.
 goto :badend
 
-:eficheck
+:findefinum
 REM
 REM Then, check for UEFI partition and an onboard copy of imagex and Dism.
 REM
-for /f "tokens=3,4" %%a in ('diskpart /s %actdrive%\srs\listvolume.txt') do (if %%b==System_UEFI set efidrive=%%a:)
-set efidriverc=%errorlevel%
-if '%efidrive%'=='' ((echo.)&(echo Unable to find any mounted volume name "System UEFI")&(goto :badend))
-if %efidriverc%==0 ((echo System_UEFI is mounted at %efidrive%.)&(echo Now checking to make sure the vhd files exist.)&(set "bcdstore=/store %efidrive%\EFI\Microsoft\Boot\BCD")&(goto :vhdcheck))
+for /f "tokens=2,3" %%a in ('diskpart /s %actdrive%\srs\listvolume.txt') do (if %%b==System_UEFI set efinum=%%a)
+set efinumrc=%errorlevel%
+if '%efinum%'=='' ((echo.)&(echo Unable to find any mounted volume name "System UEFI")&(goto :badend))
+if %efinumrc%==0 ((echo System_UEFI is volume #%efinum%.)&(goto :findefidrive))
 echo.
 echo Can't find the Physical Drive's drive letter.  I can't fix this so I've got
 echo to exit.  Please check the error message and try recreating steadier state
 echo from the beginning.
 echo.
 goto :badend
+
+:findefidrive
+for %%a in (d e f g h i j k l m n o p q r s t u v w y z) do (if not exist %%a:\ ((set efidrive=%%a)&(echo Found !efidrive!: as an available drive letter for the SYSTEM_UEFI.)&(goto :efimount)))
+echo.
+echo Error:  I need a drive letter for the UEFI System Partition,
+echo but could not find one in the following range D-W,Y,Z.
+echo I can't do the job without a free drive letter, so I've got to stop.
+echo.
+goto :badend
+
+:efimount
+echo select volume %efinum% >%actdrive%\diskpartefi.txt
+echo assign letter=%efidrive% >>%actdrive%\diskpartefi.txt
+echo rescan >>%actdrive%\diskpartefi.txt
+echo exit >>%actdrive%\diskpartefi.txt
+diskpart /s %actdrive%\diskpartefi.txt
+set dispartefirc=%errorlevel%
+if %dispartefirc%==0 ((set efidrive=%efidrive%:)&(echo Diskpart successfully mounted UEFI System Partition.)&(echo using !efidrive!)&(del %actdrive%\diskpartefi.txt)&(goto :vhdcheck))
+echo.
+echo Diskpart failed to create the UEFI System Partition, return code %dispartefirc%.
+echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
+echo just reported to see if there's a clue in there.  You may also get a clue from
+echo the diskpart script: %actdrive%\diskpartefi.txt.
+goto :eof
 
 :vhdcheck
 REM
@@ -209,6 +260,7 @@ echo Okay, then let's continue.
 echo.
 call merge.cmd
 echo.
+goto :eof
 
 :rollback
 echo.
@@ -227,4 +279,8 @@ echo -- Mark Minasi help@minasi.com www.steadierstate.com
 echo This copy of SteadierState has been modified and the source
 echo can be found at https://github.com/7heMC/SteadierState
 echo.
+goto :eof
+
+:badend
+echo Something failed.
 goto :eof
