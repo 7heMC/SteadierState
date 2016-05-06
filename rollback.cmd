@@ -154,7 +154,7 @@ bcdedit %bcdstore% /set %guid% recoveryenabled no >nul
 bcdedit %bcdstore% /set %guid% systemroot \windows	 >nul	
 bcdedit %bcdstore% /set %guid% nx OptIn >nul
 bcdedit %bcdstore% /set %guid% detecthal yes >nul
-bcdedit %bcdstore% /displayorder %guid% >nul
+bcdedit %bcdstore% /displayorder %guid% /addlast >nul
 bcdedit %bcdstore% /default %guid%  >nul
 echo Rebooting...Hopefully it worked. If not, there was an error with bcdedit.
 goto :eof
@@ -176,7 +176,7 @@ bcdedit %bcdstore% /set %guid% nx OptIn
 if not !errorlevel!==0 goto :bcderror
 bcdedit %bcdstore% /set %guid% detecthal yes
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /displayorder %guid%
+bcdedit %bcdstore% /displayorder %guid% /addlast
 if not !errorlevel!==0 goto :bcderror
 bcdedit %bcdstore% /default %guid%
 if not !errorlevel!==0 goto :bcderror
