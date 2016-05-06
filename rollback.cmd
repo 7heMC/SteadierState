@@ -144,7 +144,8 @@ REM
 set total=
 set guid=
 echo No BCD entries currently to boot from snapshot.vhd, so we'll create one...
-if %showcmd%==false (
+echo on
+if %noauto%==false (
 for /f "tokens=2 delims={}" %%a in ('bcdedit /create /d "Windows 10" /application osloader') do (set guid={%%a})
 bcdedit %bcdstore% /set %guid% device vhd=[%phydrive%]\snapshot.vhd >nul
 bcdedit %bcdstore% /set %guid% osdevice vhd=[%phydrive%]\snapshot.vhd >nul
@@ -183,6 +184,7 @@ if not !errorlevel!==0 goto :bcderror
 echo Success. The new osloader entry was created in the Windows Boot Manager.
 goto :goodend
 )
+@echo off
 
 :bcderror
 echo.

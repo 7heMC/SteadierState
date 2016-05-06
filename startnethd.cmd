@@ -100,7 +100,7 @@ echo rescan >>%actdrive%\diskpartefi.txt
 echo exit >>%actdrive%\diskpartefi.txt
 diskpart /s %actdrive%\diskpartefi.txt
 set dispartefirc=%errorlevel%
-if %dispartefirc%==0 ((set efidrive=%efidrive%:)&(echo Diskpart successfully mounted UEFI System Partition.)&(echo using %efidrive%)&(set "bcdstore=/store %efidrive%\EFI\Microsoft\Boot\BCD")&(del %actdrive%\diskpartefi.txt)&(goto :vhdcheck))
+if %dispartefirc%==0 ((set efidrive=%efidrive%:)&(echo Diskpart successfully mounted UEFI System Partition.)&(echo using %efidrive%)&(set "bcdstore=/store !efidrive!\EFI\Microsoft\Boot\BCD")&(del %actdrive%\diskpartefi.txt)&(goto :vhdcheck))
 echo.
 echo Diskpart failed to create the UEFI System Partition, return code %dispartefirc%.
 echo It's not really safe to continue so I'm stopping here.  Look at what Diskpart
