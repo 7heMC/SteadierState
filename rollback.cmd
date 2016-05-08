@@ -149,7 +149,7 @@ if %noauto%==false (
 for /f "tokens=2 delims={}" %%a in ('bcdedit /create /d "Snapshot" /application osloader') do (set guid={%%a})
 bcdedit %bcdstore% /set %guid% device vhd=[%phydrive%]\snapshot.vhd >nul
 bcdedit %bcdstore% /set %guid% osdevice vhd=[%phydrive%]\snapshot.vhd >nul
-bcdedit %bcdstore% /set %guid% path \windows\system32\winload.efi >nul
+bcdedit %bcdstore% /set %guid% path \windows\system32\boot\winload.efi >nul
 bcdedit %bcdstore% /set %guid% inherit {bootloadersettings} >nul
 bcdedit %bcdstore% /set %guid% recoveryenabled no >nul
 bcdedit %bcdstore% /set %guid% systemroot \windows	 >nul	
@@ -161,11 +161,12 @@ echo Rebooting...Hopefully it worked. If not, there was an error with bcdedit.
 goto :eof
 ) else (
 for /f "tokens=2 delims={}" %%a in ('bcdedit %bcdstore% /create /d "Snapshot" /application osloader') do (set guid={%%a})
+if '%guid%'=='' ((echo.)&(echo Unable to create Snapshot entry with bcdedit)&(goto :badend))
 bcdedit %bcdstore% /set %guid% device vhd=[%phydrive%]\snapshot.vhd
 if not !errorlevel!==0 goto :bcderror
 bcdedit %bcdstore% /set %guid% osdevice vhd=[%phydrive%]\snapshot.vhd
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %guid% path \windows\system32\winload.efi
+bcdedit %bcdstore% /set %guid% path \windows\system32\boot\winload.efi
 if not !errorlevel!==0 goto :bcderror
 bcdedit %bcdstore% /set %guid% inherit {bootloadersettings}
 if not !errorlevel!==0 goto :bcderror

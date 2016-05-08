@@ -515,7 +515,7 @@ bcdedit !bcdstore! -set {bootmgr} device boot
 ) else (
 set "bcdstore=/store %efidrive%\EFI\Microsoft\Boot\BCD"
 )
-for /f "tokens=2 delims={}" %%a in ('bcdedit %bcdstore% /create /d "Roll Back Windows" -application osloader') do (set guid={%%a})
+for /f "tokens=2 delims={}" %%a in ('bcdedit %bcdstore% /create /d "Roll Back Windows" /application osloader') do (set guid={%%a})
 if '%guid%'=='' ((echo.)&(echo Unable to create Roll Back Windows entry with bcdedit)&(goto :badend))
 @echo off
 REM
