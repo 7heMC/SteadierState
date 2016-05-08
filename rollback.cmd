@@ -146,7 +146,7 @@ set guid=
 echo No BCD entries currently to boot from snapshot.vhd, so we'll create one...
 echo on
 if %noauto%==false (
-for /f "tokens=2 delims={}" %%a in ('bcdedit /create /d "Windows 10" /application osloader') do (set guid={%%a})
+for /f "tokens=2 delims={}" %%a in ('bcdedit /create /d "Snapshot" /application osloader') do (set guid={%%a})
 bcdedit %bcdstore% /set %guid% device vhd=[%phydrive%]\snapshot.vhd >nul
 bcdedit %bcdstore% /set %guid% osdevice vhd=[%phydrive%]\snapshot.vhd >nul
 bcdedit %bcdstore% /set %guid% path \windows\system32\winload.efi >nul
@@ -160,7 +160,7 @@ bcdedit %bcdstore% /default %guid%  >nul
 echo Rebooting...Hopefully it worked. If not, there was an error with bcdedit.
 goto :eof
 ) else (
-for /f "tokens=2 delims={}" %%a in ('bcdedit %bcdstore% /create /d "Windows 10" /application osloader') do (set guid={%%a})
+for /f "tokens=2 delims={}" %%a in ('bcdedit %bcdstore% /create /d "Snapshot" /application osloader') do (set guid={%%a})
 bcdedit %bcdstore% /set %guid% device vhd=[%phydrive%]\snapshot.vhd
 if not !errorlevel!==0 goto :bcderror
 bcdedit %bcdstore% /set %guid% osdevice vhd=[%phydrive%]\snapshot.vhd
