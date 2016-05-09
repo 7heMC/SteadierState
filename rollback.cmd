@@ -146,7 +146,8 @@ set guid=
 echo No BCD entries currently to boot from snapshot.vhd, so we'll create one...
 echo on
 if %noauto%==false (
-for /f "tokens=2 delims={}" %%a in ('bcdedit /create /d "Snapshot" /application osloader') do (set guid={%%a})
+for /f "tokens=2 delims={}" %%a in ('bcdedit %bcdstore% /create /d "Snapshot" /application osloader') do (set guid={%%a})
+if '%guid%'=='' ((echo.)&(echo Unable to create Snapshot entry with bcdedit)&(goto :badend))
 bcdedit %bcdstore% /set %guid% device vhd=[%phydrive%]\snapshot.vhd >nul
 bcdedit %bcdstore% /set %guid% osdevice vhd=[%phydrive%]\snapshot.vhd >nul
 bcdedit %bcdstore% /set %guid% path \windows\system32\boot\winload.efi >nul
