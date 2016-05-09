@@ -109,6 +109,7 @@ echo the diskpart script: %actdrive%\diskpartefi.txt.
 goto :eof
 
 :vhdcheck
+setlocal DISABLEDELAYEDEXPANSION
 REM
 REM Verify there's a file \image.vhd and \snapshot.vhd on the current drive
 REM
@@ -152,6 +153,7 @@ REM
 goto :showshell
 
 :autoroll
+set rollbackrc=
 call rollback.cmd
 REM
 REM if something went wrong and the user needs to see it, there's

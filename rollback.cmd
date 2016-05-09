@@ -147,46 +147,48 @@ echo No BCD entries currently to boot from snapshot.vhd, so we'll create one...
 echo on
 if %noauto%==false (
 for /f "tokens=2 delims={}" %%a in ('bcdedit %bcdstore% /create /d "Snapshot" /application osloader') do (set guid={%%a})
-if '%guid%'=='' ((echo.)&(echo Unable to create Snapshot entry with bcdedit)&(goto :badend))
-bcdedit %bcdstore% /set %guid% device vhd=[%phydrive%]\snapshot.vhd >nul
-bcdedit %bcdstore% /set %guid% osdevice vhd=[%phydrive%]\snapshot.vhd >nul
-bcdedit %bcdstore% /set %guid% path \windows\system32\boot\winload.efi >nul
-bcdedit %bcdstore% /set %guid% inherit {bootloadersettings} >nul
-bcdedit %bcdstore% /set %guid% recoveryenabled no >nul
-bcdedit %bcdstore% /set %guid% systemroot \windows	 >nul	
-bcdedit %bcdstore% /set %guid% nx OptIn >nul
-bcdedit %bcdstore% /set %guid% detecthal yes >nul
-bcdedit %bcdstore% /displayorder %guid% /addlast >nul
-bcdedit %bcdstore% /default %guid%  >nul
+if '!guid!'=='' ((echo.)&(echo Unable to create Snapshot entry with bcdedit)&(goto :badend))
+bcdedit %bcdstore% /set !guid! device vhd=[%phydrive%]\snapshot.vhd >nul
+bcdedit %bcdstore% /set !guid! osdevice vhd=[%phydrive%]\snapshot.vhd >nul
+bcdedit %bcdstore% /set !guid! path \windows\system32\boot\winload.efi >nul
+bcdedit %bcdstore% /set !guid! inherit {bootloadersettings} >nul
+bcdedit %bcdstore% /set !guid! recoveryenabled no >nul
+bcdedit %bcdstore% /set !guid! systemroot \windows	 >nul	
+bcdedit %bcdstore% /set !guid! nx OptIn >nul
+bcdedit %bcdstore% /set !guid! detecthal yes >nul
+bcdedit %bcdstore% /displayorder !guid! /addlast >nul
+bcdedit %bcdstore% /default !guid!  >nul
+@echo off
 echo Rebooting...Hopefully it worked. If not, there was an error with bcdedit.
 goto :eof
 ) else (
 for /f "tokens=2 delims={}" %%a in ('bcdedit %bcdstore% /create /d "Snapshot" /application osloader') do (set guid={%%a})
-if '%guid%'=='' ((echo.)&(echo Unable to create Snapshot entry with bcdedit)&(goto :badend))
-bcdedit %bcdstore% /set %guid% device vhd=[%phydrive%]\snapshot.vhd
+if '!guid!'=='' ((echo.)&(echo Unable to create Snapshot entry with bcdedit)&(goto :badend))
+bcdedit %bcdstore% /set !guid! device vhd=[%phydrive%]\snapshot.vhd
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %guid% osdevice vhd=[%phydrive%]\snapshot.vhd
+bcdedit %bcdstore% /set !guid! osdevice vhd=[%phydrive%]\snapshot.vhd
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %guid% path \windows\system32\boot\winload.efi
+bcdedit %bcdstore% /set !guid! path \windows\system32\boot\winload.efi
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %guid% inherit {bootloadersettings}
+bcdedit %bcdstore% /set !guid! inherit {bootloadersettings}
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %guid% recoveryenabled no
+bcdedit %bcdstore% /set !guid! recoveryenabled no
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %guid% systemroot \windows	
+bcdedit %bcdstore% /set !guid! systemroot \windows	
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %guid% nx OptIn
+bcdedit %bcdstore% /set !guid! nx OptIn
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /set %guid% detecthal yes
+bcdedit %bcdstore% /set !guid! detecthal yes
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /displayorder %guid% /addlast
+bcdedit %bcdstore% /displayorder !guid! /addlast
 if not !errorlevel!==0 goto :bcderror
-bcdedit %bcdstore% /default %guid%
+bcdedit %bcdstore% /default !guid!
 if not !errorlevel!==0 goto :bcderror
+@echo off
 echo Success. The new osloader entry was created in the Windows Boot Manager.
 goto :goodend
 )
-@echo off
+
 
 :bcderror
 echo.
