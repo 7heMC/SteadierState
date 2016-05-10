@@ -132,11 +132,32 @@ REM snapshot.
 REM
 REM @echo off
 REM
-del %actdrive%\temp.txt 2>nul
-bcdedit %bcdstore% |find /c "snapshot.vhd">%actdrive%\temp.txt
-set total=
-set /p total= <%actdrive%\temp.txt
-del %actdrive%\temp.txt 2>nul
+if exist %actdrive%\temp.txt del %actdrive%\temp.txt /y 2>nul
+for /f "delims=" %%a in ('bcdedit %bcdstore% /enum /v') do (
+	for /f "tokens=1,2" %%b in ('echo %%a') do (
+		if %%b==identifier (
+			set guid=%%c
+			bcdedit %bcdstore% /enum !guid! /v | find /c "snapshot.vhd" >%actdrive%\temp.txt
+			set total=
+			set /p total= <%actdrive%\temp.txt
+			del %actdrive%\temp.txt 2>nul
+			if not !total!==0 (
+				if %noauto%==false (
+					bcdedit %bcdstore% /default !guid!  >nul
+					echo ... None required, existing one will work fine.
+					echo Successfully completed rollback, reboot and you're ready to go.
+					exit
+				) else (
+					bcdedit %bcdstore% /default !guid!
+					echo ... None required, existing one will work fine.
+					echo Successfully completed rollback, reboot and you're ready to go.
+					goto :goodend
+				)
+			)
+		)
+	)
+)
+
 if not %total%==0 ((echo ... None required, existing one will work fine.)&(echo Successfully completed rollback, reboot and you're ready to go.)&(goto :goodend))
 REM
 REM otherwise we have to create a BCD entry
@@ -144,8 +165,8 @@ REM
 set total=
 set guid=
 echo No BCD entries currently to boot from snapshot.vhd, so we'll create one...
-echo on
 if %noauto%==false (
+echo on
 for /f "tokens=2 delims={}" %%a in ('bcdedit %bcdstore% /create /d "Snapshot" /application osloader') do (set guid={%%a})
 if '!guid!'=='' ((echo.)&(echo Unable to create Snapshot entry with bcdedit)&(goto :badend))
 bcdedit %bcdstore% /set !guid! device vhd=[%phydrive%]\snapshot.vhd >nul
@@ -160,8 +181,9 @@ bcdedit %bcdstore% /displayorder !guid! /addlast >nul
 bcdedit %bcdstore% /default !guid!  >nul
 @echo off
 echo Rebooting...Hopefully it worked. If not, there was an error with bcdedit.
-goto :eof
+exit
 ) else (
+echo on
 for /f "tokens=2 delims={}" %%a in ('bcdedit %bcdstore% /create /d "Snapshot" /application osloader') do (set guid={%%a})
 if '!guid!'=='' ((echo.)&(echo Unable to create Snapshot entry with bcdedit)&(goto :badend))
 bcdedit %bcdstore% /set !guid! device vhd=[%phydrive%]\snapshot.vhd
@@ -214,7 +236,7 @@ if exist %noadrive%\srs\noauto.txt del %noadrive%\srs\noauto.txt
 goto :eof
 
 :goodend
-set rollbackrc=
+set rollbackrc=0
 REM
 REM After rollback.cmd is complete, delete noauto.txt file so that it will 
 REM autoroll next time

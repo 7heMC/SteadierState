@@ -153,15 +153,13 @@ REM
 goto :showshell
 
 :autoroll
-set rollbackrc=
 call rollback.cmd
 REM
 REM if something went wrong and the user needs to see it, there's
 REM a "99" exit code; otherwise "exit" to cause an auto reboot
 REM
-if %rollbackrc%==99 goto :eof
-exit
-goto :eof
+if not %rollbackrc%==99 exit
+goto :badend
 
 :noimage
 REM
@@ -235,8 +233,9 @@ echo.
 echo merge and hit enter.
 echo.
 echo Type anything else to exit this script and use the command prompt.
-set /p set %response1%=What is your answer?
+set /p %response1%=What is your answer?
 echo.
+REM
 REM Next, check with the human if not auto called by automerge.
 REM
 if '%response1%'=='' ((echo Exiting...)&(goto :eof))
