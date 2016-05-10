@@ -537,9 +537,25 @@ bcdedit %bcdstore% /set %guid% systemroot \windows
 bcdedit %bcdstore% /set %guid% winpe yes
 bcdedit %bcdstore% /set %guid% detecthal yes 
 bcdedit %bcdstore% /displayorder %guid% /addlast
-bcdedit %bcdstore% /default %guid%
 bcdedit %bcdstore% /timeout 1 
 @echo off
+for /f "delims=" %%a in ('bcdedit %bcdstore% /enum /v') do (
+	for /f "tokens=1,2" %%b in ('echo %%a') do (
+		if %%b==identifier (
+			set guid=%%c
+			bcdedit %bcdstore% /enum !guid! /v | find /c "image.vhd" >%actdrive%\temp.txt
+			set total=
+			set /p total= <%actdrive%\temp.txt
+			del %actdrive%\temp.txt 2>nul
+			if not !total!==0 (
+					bcdedit %bcdstore% /default !guid!
+					echo Successfully set image.vhd as default, reboot and you're ready to go.
+					goto :goodend
+				)
+			)
+		)
+	)
+)
 if %osversion%==7 if exist %srsdrive%\boot\bcd goto :bcdok
 if %osversion%==10 if exist %efidrive%\EFI\Microsoft\Boot\BCD goto :bcdok
 echo.
