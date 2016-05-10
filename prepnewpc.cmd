@@ -551,7 +551,6 @@ for /f "delims=" %%a in ('bcdedit %bcdstore% /enum /v') do (
 					bcdedit %bcdstore% /default !guid!
 					echo Successfully set image.vhd as default, reboot and you're ready to go.
 					goto :goodend
-				)
 			)
 		)
 	)
