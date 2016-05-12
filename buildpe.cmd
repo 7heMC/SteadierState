@@ -1,752 +1,658 @@
 @echo off
-setlocal ENABLEDELAYEDEXPANSION
-cls
-REM BUILDPE.CMD
-REM
-REM Function: automates creating the USB stick or CD
-REM used to deploy Steadier State to a system
-REM End product:  an ISO folder and optionally puts
-REM it on a USB stick.
-REM
-REM Inputs and Assumptions
-REM Assumes: WAIK or ADK installed in default location
-REM		Can create and delete a folder %temp%\SrS
-REM Inputs:	Which version of OS to use, Win 7, 8, 10, etc.
-REM     Which architecture to use, 32 or 64 bit
-REM		Where to write the ISO for a CD (or not to)
-REM		Drive letter of the USB stick to create
-REM		(or not to create a USB stick)
-REM
-REM WAIK/ADK LOCATION
-REM Needs the WAIK or ADK installed in its default location
-REM If that's an issue, change the next couple of lines to point
-REM to the top level folder in wherever you installed
-REM the WAIK/ADK.
-set "waikase=C:\Program Files\Windows AIK\Tools"
-set "adkbase=C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit"
-set makeiso=true
-set madeiso=false
-set makeusb=true
-set madeusb=false
-set usbdriveletter=none
-set logdir=C:\windows\logs\buildpelogs
-REM
-REM Check that we're running as an admin
-REM
-del temp.txt 2> nul
-whoami /groups |find /c "High Mandatory">temp.txt
-set total=
-set /p total= <temp.txt
-del temp.txt 2>nul
-if '%total%'=='1' goto :youreanadmin
-echo.
-echo I'm sorry, but you must be running from an elevated 
-echo command prompt to run this command file.  Start a new 
-echo command prompt by right-clicking the Command Prompt icon, and
-echo then choose "Run as administrator" and click "yes" if you see
-echo a UAC prompt.
-goto :done
+rem ====================================================================
+rem 						BUILDPE.CMD
+rem 
+rem Function: automates creating the USB stick or CD used to deploy
+rem 	Steadier State to a system
+rem End product:  an ISO folder and optionally puts it on a USB
+rem 	stick.
+rem
+rem Assumes:ADK installed in default location
+rem 		Can create and delete a folder %temp%\SrS
+rem	Inputs:	Which version of OS to use, Win 7, 8, 10, etc.
+rem    		Which architecture to use, 32 or 64 bit
+rem			Where to write the ISO for a CD if desired
+rem			Drive letter of the USB stick to create if desired
+rem
+rem ADK LOCATION
+rem 	Needs Windows ADK installed in its default location. If
+rem 	that's an issue, change the "_adkbase" variable to point to the
+rem		top level folder wherever the ADK is installed. This script was
+rem		designed to use Windows 10 ADK, which can be installed and used
+rem		on any Windows 7 or newer system. If it is not found, we will
+rem		ask to install it. Previous versions are listed here as well,
+rem		but are untested and should not be used with this script.
+rem		Windows 7 WAIK:
+rem 		http://www.microsoft.com/en-us/download/details.aspx?id=5753
+rem		Windows 8 ADK:
+rem 		http://www.microsoft.com/en-us/download/details.aspx?id=30652
+rem		Windows 8.1 ADK:
+rem 		http://www.microsoft.com/en-US/download/details.aspx?id=39982
+rem		Windows 10 ADK:
+rem 		https://msdn.microsoft.com/en-us/windows/hardware/dn913721.aspx
+rem
 
-:youreanadmin
-REM
-REM Set up and test logging
-REM
-rd %logdir% /q /s  2>nul
-md %logdir%\test
-if exist %logdir%\test ((rd %logdir%\test /q /s)&(goto :canlog))
-echo.
-echo I can't seem to delete the old logs; continuing anyway.
-echo.
+:setup
+	setlocal ENABLEDELAYEDEXPANSION
+	cls
+	if %processor_architecture%==AMD64 (
+		set _arch=amd64
+		set _len=64
+		set "_adkbase=%programfiles(x86)%\Windows Kits\10\Assessment and Deployment Kit"
+	) else (
+		set _arch=x86
+		set _len=32
+		set "_adkbase=%programfiles%\Windows Kits\10\Assessment and Deployment Kit"
+	)
+	set _logdir=%systemroot%\logs\buildpelogs
+	set _buildpepath=%temp%\BuildPE
+	set _adkcheckcount=0
+	
+:adkcheck
+	if not exist %_adkbase% (
+		if %_adkcheckcount%==0 (
+			call :adkmissing
+		) else (
+			echo.
+			echo We tried to install Windows ADK, but something went wrong.
+			echo Please try to install it manually.
+			goto :badend
+		)
+	) else (
+		echo.
+		echo Found Windows adk at %_adkbase%
+		goto :admincheck
+	)
+	
+:adkmissing
+	echo For this to work, you MUST have the Windows Assessment and
+	echo Deployment Kit downloaded and installed in its default
+	echo location, or modify the "set _adkbase=" line in the command
+	echo file with the ADK's alternate location. Would you like to
+	echo download and install the current Windows ADK? This could take
+	echo well over 30 minutes. Type 'y' and press Enter if you do or
+	set /p _adkresp=anything else if you do not.
+	if '%_adkresp%'=='y' goto :adkinstall
+	goto :badend
 
-:canlog
-echo.
-echo ___________________________________________________________
-echo     B U I L D   U S B / I S O  T O O L
-echo ___________________________________________________________
-echo.
-echo This command file (buildpe.cmd) creates the tool you'll
-echo need to get started using Steadier State, the free "Windows
-echo Rollback," SteadyState-like tool for un-doing all changes
-echo to a Windows system in under three minutes.  This creates a
-echo bootable USB stick or CD that you can then use to prepare a
-echo computer to be roll-back-able.
-echo.
-echo You've got some options about building that tool, however, so
-echo this command file will have to ask a few questions before we
-echo get started.
-echo.
-echo To stop this program, you can type the word "end" as the answer
-echo to any question.  Please type all responses in LOWERCASE!
+:adkinstall
+	echo You have chosen to install the Windows 10 ADK. I will now download
+	echo it using bitsadmin and install it to the default location.
+	set _adkcheckcount=1
+	bitsadmin /transfer adksetup /priority normal http://go.microsoft.com/fwlink/p/?LinkId=526740 %temp%\adksetup.exe
+	start %temp%\adksetup.exe /features OptionId.DeploymentTools OptionId.WindowsPreinstallationEnvironment /ceip off /q
+	echo Please wait while the adk is installed. This can take a very
+	echo long time. We will check every 10 seconds to see when the install is
+	echo completed. The progress bar will continue until finished.
+	call :adkwait
+	goto :adkcheck
 
+:adkwait
+	if exist %temp%\temp.txt del %temp%\temp.txt
+	tasklist /nh |find /c "adksetup.exe">%temp%\temp.txt
+	set _adksetupactive=
+	set /p _adksetupactive= <%temp%\temp.txt
+	if not %_adksetupactive%==0 (
+		del %temp%\temp.txt
+		timeout /t 10 /nobreak >NUL
+		<NUL set /p _progress=.
+		goto :wait
+	)
+	exit /b
+	
+:admincheck	
+	rem
+	rem Check that we're running as an admin
+	rem
+	if exist %temp%\temp.txt del %temp%\temp.txt
+	whoami /groups |find /c "High Mandatory">%temp%\temp.txt
+	set _admin=
+	set /p _admin= <%temp%\temp.txt
+	del %temp%\temp.txt
+	if %_admin%==1 goto :adminok
+	echo.
+	echo I'm sorry, but you must be running from an elevated 
+	echo command prompt to run this command file.  Start a new 
+	echo command prompt by right-clicking the Command Prompt icon, and
+	echo then choose "Run as administrator" and click "yes" if you see
+	echo a UAC prompt.
+	goto :badend
+
+:adminok
+	rem
+	rem Set up and test logging
+	rem
+	rd %_logdir% /q /s  2>nul
+	md %_logdir%\test
+	if exist %_logdir%\test (
+		rd %_logdir%\test /q /s
+		goto :logok
+	)
+	echo.
+	echo I can't seem to delete the old logs; continuing anyway.
+	echo.
+
+:logok
+	echo.
+	echo ___________________________________________________________
+	echo     B U I L D   U S B / I S O  T O O L
+	echo ___________________________________________________________
+	echo.
+	echo This command file (buildpe.cmd) creates the tool you'll
+	echo need to get started using Steadier State, the free "Windows
+	echo Rollback," SteadyState-like tool for un-doing all changes
+	echo to a Windows system in under three minutes.  This creates a
+	echo bootable USB stick or CD that you can then use to prepare a
+	echo computer to be roll-back-able.
+	echo.
+	echo You've got some options about building that tool, however, so
+	echo this command file will have to ask a few questions before we
+	echo get started.
+	echo.
+	echo To stop this program, you can type the word "end" as the answer
+	echo to any question.  Please type all responses in LOWERCASE!
+
+:filessearch
+	rem
+	rem Check to see if all of the Steadier State files are in the same
+	rem folder.
+	rem
+	set _cmdpath=%0
+	set _cmdname=%~n0%~x0
+	call :strlen _cmdname _strlen
+	call set _srspath=%%cmdpath:~0,-%strlen%%%
+	goto :filescheck
+
+:strlen <stringVar> <resultVar>
+	(   
+		setlocal EnableDelayedExpansion
+		set "_string=!%~1!#"
+		set "_strlen=0"
+		for %%a in (4096 2048 1024 512 256 128 64 32 16 8 4 2 1) do (
+			if "!_string:~%%a,1!" NEQ "" ( 
+				set /a "_strlen+=%%a"
+				set "_string=!_string:~%%a!"
+			)
+		)
+	)
+	( 
+		endlocal
+		set "%~2=%_strlen%"
+		exit /b
+	)
+	
 :filesquestion
-echo.
-echo =========================================================
-echo Question 1: Where are the Steadier State files?
-echo.
-echo Finally, where is the folder with the Steadier State command files,
-echo the folder containing rollback.cmd, merge.cmd, startnethd.cmd,
-echo startnetusb.cmd and prepnewpc.cmd?  Please enter the 
-echo folder name here and press Enter; again, to stop this program
-echo just type "end" and press Enter:
-echo.
-set /p sourceresp=Your response (folder name for Steadier State files)? 
-if '%sourceresp%'=='end' ((echo Exiting at your request.)&(echo.)&(goto :done))
-echo.
-echo Checking for the files in folder "%sourceresp%"...
-if not exist %sourceresp%\cvt2vhd.cmd ((echo cvt2vhd.cmd not found in %sourceresp%.)&(goto :filesquestion))
-if not exist %sourceresp%\listvolume.txt ((echo listvolume.txt not found in %sourceresp%.)&(goto :filesquestion))
-if not exist %sourceresp%\merge.cmd ((echo merge.cmd not found in %sourceresp%.)&(goto :filesquestion))
-if not exist %sourceresp%\prepnewpc.cmd ((echo prepnewpc.cmd not found in %sourceresp%.)&(goto :filesquestion))
-if not exist %sourceresp%\rollback.cmd ((echo rollback.cmd not found in %sourceresp%.)&(goto :filesquestion))
-if not exist %sourceresp%\startnethd.cmd ((echo startnethd.cmd not found in %sourceresp%.)&(goto :filesquestion))
+	echo.
+	echo ===============================================================
+	echo Where are the Steadier State files?
+	echo.
+	echo We were unable to automatically locate the files. Where is the
+	echo folder with the Steadier State command files, i.e. the folder
+	echo containing cvt2vhd.cmd, defaultbcd.cmd, firstrun.cmd,
+	echo listvolume.txt, merge.cmd, nodrives.reg, prepnewpc.cmd,
+	echo rollback.cmd, startnethd.cmd. Please enter the folder name here
+	echo and press Enter; again, to stop this program just type 'end'
+	set /p _srspath=without quotes and press Enter to exit.
+	if '%_srspath%'=='end' goto :end
+	
+:filescheck
+	echo.
+	echo Checking for the files in folder "%_srspath%"...
+	if not exist %_srspath%\cvt2vhd.cmd (
+		echo cvt2vhd.cmd not found in %_srspath%.
+		goto :filesquestion
+	)
+	if not exist %_srspath%\defaultbcd.cmd (
+		echo defaultbcd.cmd not found in %_srspath%.
+		goto :filesquestion
+	)
+	if not exist %_srspath%\firstrun.cmd (
+		echo firstrun.cmd not found in %_srspath%.
+		goto :filesquestion
+	)
+	if not exist %_srspath%\listvolume.txt (
+		echo listvolume.txt not found in %_srspath%.
+		goto :filesquestion
+	)
+	if not exist %_srspath%\merge.cmd (
+		echo merge.cmd not found in %_srspath%.
+		goto :filesquestion
+	)
+	if not exist %_srspath%\nodrives.reg (
+		echo nodrives.reg not found in %_srspath%.
+		goto :filesquestion
+	)
+	if not exist %_srspath%\prepnewpc.cmd (
+		echo prepnewpc.cmd not found in %_srspath%.
+		goto :filesquestion
+	)
+	if not exist %_srspath%\rollback.cmd (
+		echo rollback.cmd not found in %_srspath%.
+		goto :filesquestion
+	)
+	if not exist %_srspath%\startnethd.cmd (
+		echo startnethd.cmd not found in %_srspath%.
+		goto :filesquestion
+	)
 
 :usbquestion
-echo.
-echo =========================================================
-echo Question 2: Where's the USB stick (if any)?
-echo.
-echo Would you like me to set up the Steadier State install tool on a bootable
-echo USB stick (or any other UFD device, for that matter)?
-echo.
-echo     REMINDER: I'M GOING TO WIPE THAT DEVICE CLEAN!!!
-echo.
-echo Type "y"  (without the quotes) to set up a USB stick.  Enter anything 
-echo else to NOT create a USB stick, or "end" to end this program.
-set /p usbresp=What's your answer? 
-echo.
-if '%usbresp%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :done))
-if not '%usbresp%'=='y' goto :nousbstick
-echo.
-echo Ok, here is the list of current volumes on your computer.
-for /f "delims={}" %%a in ('diskpart /s %sourceresp%\listvolume.txt') do (echo %%a)
-echo What is that USB stick's drive letter?
-echo Enter its drive letter -- just the letter, don't
-set /p usbdriveletter=add a colon (":") after it -- and press Enter.
-if '%usbdriveletter%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :done))
-echo.
-if not exist %usbdriveletter%:\ ((echo.)&(echo ---- ERROR ----)&(echo.)&(echo.)&(echo There doesn't seem to be a USB stick at %usbdriveletter%:.  Let's try again.)&(echo.)&(goto :usbquestion))
-REM
-REM If not, there's a USB stick there.
-REM I need this to be uppercase so now I'll have to uppercase it.
-REM
-if '%usbdriveletter%'=='c' set usbdriveletter=C
-if '%usbdriveletter%'=='d' set usbdriveletter=D
-if '%usbdriveletter%'=='e' set usbdriveletter=E
-if '%usbdriveletter%'=='f' set usbdriveletter=F
-if '%usbdriveletter%'=='g' set usbdriveletter=G
-if '%usbdriveletter%'=='h' set usbdriveletter=H
-if '%usbdriveletter%'=='i' set usbdriveletter=I
-if '%usbdriveletter%'=='j' set usbdriveletter=J
-if '%usbdriveletter%'=='k' set usbdriveletter=K
-if '%usbdriveletter%'=='l' set usbdriveletter=L
-if '%usbdriveletter%'=='m' set usbdriveletter=M
-if '%usbdriveletter%'=='n' set usbdriveletter=N
-if '%usbdriveletter%'=='o' set usbdriveletter=O
-if '%usbdriveletter%'=='p' set usbdriveletter=P
-if '%usbdriveletter%'=='q' set usbdriveletter=Q
-if '%usbdriveletter%'=='r' set usbdriveletter=R
-if '%usbdriveletter%'=='s' set usbdriveletter=S
-if '%usbdriveletter%'=='t' set usbdriveletter=T
-if '%usbdriveletter%'=='u' set usbdriveletter=U
-if '%usbdriveletter%'=='v' set usbdriveletter=V
-if '%usbdriveletter%'=='w' set usbdriveletter=W
-if '%usbdriveletter%'=='x' set usbdriveletter=X
-if '%usbdriveletter%'=='y' set usbdriveletter=Y
-if '%usbdriveletter%'=='z' set usbdriveletter=Z
-echo Found a device at %usbdriveletter%:.
-goto :isoquestion
+	echo.
+	echo ===============================================================
+	echo Do you want to prepare an USB stick?
+	echo.
+	echo Would you like me to set up the Steadier State install tool on
+	echo a bootable USB stick or any other UFD device?
+	echo.
+	echo     REMINDER: I'M GOING TO WIPE THAT DEVICE CLEAN!!!
+	echo.
+	echo Type "y"  (without the quotes) to set up a USB stick.  Enter anything 
+	set /p _usbresp=else to NOT create a USB stick, or "end" to end this program.
+	echo.
+	if '%_usbresp%'=='end' goto :end
+	if not '%_usbresp%'=='y' goto :nousbstick
+	echo.
+	echo Ok, here is the list of current volumes on your computer.
+	for /f "delims={}" %%a in ('diskpart /s %_srspath%\listvolume.txt') do (echo %%a)
+	echo What is that USB stick's drive letter? Enter just its drive
+	set /p _usbdrive=letter, don't add a colon ":" after it. Then press Enter.
+	if '%_usbdrive%'=='end' goto :end
+	if '%_usbdrive%'=='' (
+		echo.
+		echo "You did not enter anything. Asking again about USB.
+		goto :usbquestion
+	)
+	rem
+	rem Make sure that usbdrive only contains the letter
+	rem
+	set _usbdrive=%_usbdrive:~0,1%
+	echo.
+	if not exist %_usbdrive%:\ (
+		echo.
+		echo ---- ERROR ----
+		echo.
+		echo There doesn't seem to be a USB stick at %_usbdrive%:.  Let's
+		echo try again.
+		echo.
+		goto :usbquestion
+	)
+	set _makeusb=true
+	echo.
+	echo Found a device at %_usbdrive%:.
+	goto :isoquestion
 
 :nousbstick
-echo.
-echo Okay, no need to create a bootable USB stick.
-echo.
-set makeusb=false
-
+	set _makeusb=false
+	echo.
+	echo Okay, no need to create a bootable USB stick.
+	
 :isoquestion
-echo.
-echo.
-echo =========================================================
-echo Question 3: ISO File or no?
-echo.
-echo Would you like me to create an ISO file of a bootable CD image
-echo (equipped with the Steadier State install files) that you can burn to a
-echo CD or use in a virtual machine environment?  This will be useful
-echo in situations where you don't have a USB stick or perhaps one 
-echo might not work.  To create the ISO, please respond "y" and Enter.
-set /p isoresp=Type y to make the ISO, end to exit, anything else to skip making the ISO?
-if '%isoresp%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :done))
-if not '%isoresp%'=='y' goto :noiso
-set makeiso=true
-echo.
-echo Okay, I will create an ISO file in your Documents folder.
-echo.
-goto :osquestion
+	echo.
+	echo.
+	echo ===============================================================
+	echo Do you want to prepare an ISO File?
+	echo.
+	echo Would you like me to create an ISO file of a bootable CD image
+	echo (equipped with the Steadier State install files) that you can
+	echo burn to a CD or use in a virtual machine environment?  This
+	echo will be useful in situations where you don't have a USB stick
+	echo or perhaps one might not work.  To create the ISO, please type
+	echo 'y' and press Enter. Type anything else to skip making the ISO
+	set /p _isoresp=file.
+	if '%_isoresp%'=='end' goto :end
+	if not '%_isoresp%'=='y' goto :noiso
+	set _makeiso=true
+	set _isopath=%userprofile%\documents\SrS%_len%Inst.iso
+	echo.
+	echo Okay, I will create an ISO file in your Documents folder.
+	goto :isousbcheck
 
 :noiso
-echo.
-echo Okay, I won't create an ISO file.
-set makeiso=false
+	set _makeiso=false
+	echo.
+	echo Okay, I won't create an ISO file.
 
-:osquestion
-REM
-REM Test to see if neither output desired
-REM
-if not '%makeiso%%makeusb%'=='falsefalse' goto :askos
-echo.
-echo You've selected that you want neither a USB stick nor an ISO
-echo file, so there'd be no point in continuing.  Exiting...
-echo.
-goto :done
 
-:askos
-echo.
-echo.
-echo =========================================================
-echo Question 4: What Version of Windows?
-echo.
-echo Next, what version of Windows will you be using?
-echo SteadierState currently only supports Windows 7 and Windows 10.
-echo Please enter just the number and press Enter.
-set /p osresp=Your response?
-if '%osresp%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :done))
-if '%osresp%'=='7' ((if not exist "%waikbase%" goto :nowaik)&(goto :askarch))
-if '%osresp%'=='8' goto :notsupported
-if '%osresp%'=='8.1' goto :notsupported
-if '%osresp%'=='10' ((if not exist "%adkbase%" goto :noadk)&(goto :askarch))
-echo.
-echo -------- ERROR -----------
-echo.
-echo Sorry, that didn't match any of the accepted values (7, 8, 8.1, 10)
-echo Only Windows 7 and Windows 10 are currently supported. Selecting 10
-echo may work for Windows 8 or 8.1. However, this is untested.
-echo.
-goto :askos
+:isousbcheck
+	rem
+	rem Test to see if neither output is desired
+	rem
+	if not '%_makeiso%%_makeusb%'=='falsefalse' goto :archquestion
+	echo.
+	echo You've selected that you want neither a USB stick nor an ISO
+	echo file, so there'd be no point in continuing.
+	echo.
+	goto :badend
 
-:askarch
-echo.
-echo.
-echo =========================================================
-echo Question 5: 32 bit or 64 bit?
-echo.
-echo Next, will you be putting this on a 32-bit or 64-bit
-echo system?  Please enter either "32" or "64" and press Enter.
-set /p archresp=Your response?
-if '%archresp%'=='end' ((echo.)&(echo Exiting as requested.)&(goto :done))
-set arch=nothing
-set len=48
-if '%archresp%'=='64' ((set arch=amd64)&(set len=64)& (goto :confirm))
-if '%archresp%'=='32' ((set arch=x86)&(set len=32) &(goto :confirm))
-echo.
-echo -------- ERROR -----------
-echo.
-echo Sorry, that didn't match either "32" or "64."
-echo.
-goto :askarch
+:archquestion
+	echo.
+	echo.
+	echo =========================================================
+	echo 32 bit or 64 bit?
+	echo.
+	echo I've noticed you are using running a %_len% bit system.
+	echo Will you be putting this on a machine with the same
+	echo architecture? If so, you can simply type 'y' and press Enter.
+	echo Otherwise type either "32" or "64" and press Enter.
+	set /p _archresp=Your response?
+	if '%_archresp%'=='end' goto :end
+	if '%_archresp%'=='y' goto :confirm
+	if '%_archresp%'=='32' (
+		set _arch=x86
+		set _len=32
+		goto :confirm
+	)
+	if '%_archresp%'=='64' (
+		set _arch=amd64
+		set _len=64
+		goto :confirm
+	)
+	echo.
+	echo -------- ERROR -----------
+	echo.
+	echo Sorry, that didn't match any of the acceptable responses
+	echo (y, 32 or 64)
+	echo.
+	goto :archquestion
 
 :confirm
-echo.
-echo Now I'm ready to prepare your USB stick and/or ISO.
-echo Confirming, you chose:
-echo.
-echo Windows Version=%osresp%
-echo Architecture=%len% bit.
-echo Make a USB stick=%makeusb%
-if %makeusb%==true echo Drive for USB stick=%usbdriveletter%:
-echo Make an ISO file=%makeiso%
-if %osresp%==7 (
-echo WAIK installed:  verified
-) else (
-echo ADK installed:  verified
-)
-REM
-REM Set temp name of WinPE folder
-REM
-set fname=%temp%\BuildPE
-echo WinPE workspace folder=%fname%
-echo (Folder will be automatically deleted once we're finished.)
-set volname=ROLLB%len%INST
-echo USB/CD volume name=%volname%
-set isofilespec=%userprofile%\documents\SrS%len%Inst.iso
-if %makeiso%==true echo File name and location of ISO file=%isofilespec%
-echo Location of Steadier State command files=%sourceresp%
-set nousbdrive=true
-if %makeusb%==true set nousbdrive=false
-echo Windows Version=%osresp% >%logdir%\startlog.txt
-echo Architecture=%len% bit. >>%logdir%\startlog.txt
-echo Make a USB stick=%makeusb% >>%logdir%\startlog.txt
-if %makeusb%==true echo Drive for USB stick=%usbdriveletter%: >>%logdir%\startlog.txt
-echo Make an ISO file=%makeiso% >>%logdir%\startlog.txt
-if %osresp%==7 (
-echo WAIK installed:  verified >>%logdir%\startlog.txt
-) else (
-echo ADK installed:  verified >>%logdir%\startlog.txt
-)
-echo WinPE workspace folder=%fname% >>%logdir%\startlog.txt
-echo USB/CD volume name=%volname% >>%logdir%\startlog.txt
-if %makeiso%==true echo File name and location of ISO file=%isofilespec% >>%logdir%\startlog.txt
-echo Location of Steadier State command files=%sourceresp% >>%logdir%\startlog.txt
-echo.
-echo Please press "y" and Enter to confirm that you want to
-set /p confirmresp=do this, or anything else and Enter to stop.
-echo.
-if not '%confirmresp%'=='y' goto :done
-if '%confirmresp%=='end' ((echo.)&(echo Exiting as requested.)&(goto :done))
-echo.
-echo Buildpe started.  This may take about five to ten minutes in total.
-echo.
-echo If this fails, look in %logdir% for detailed output and logs
-echo of the each stage of the process.
-echo.
-echo First, clean up any mess from previous BUILDPE runs.
-echo.
-REM
-REM create DL, drive letter, add colon
-REM
-set dl=%usbdriveletter:~0,1%:
-echo Then, create a WinPE workspace, using the WAIK/ADK tools.
-echo.
-REM
-REM To work!  Create WinPE workspace
-REM add WAIK/ADK path stuff
-REM
-pushd
-if %osresp%==7 (
-echo Setting WAIK environment variables >>%logdir%\startlog.txt
-call "%WAIKBase%\PETools\pesetenv.cmd" >%logdir%\01setenv.txt
-) else (
-echo Setting ADK environment variables >>%logdir%\startlog.txt
-call "%ADKBase%\Deployment Tools\DandISetEnv.bat" >%logdir%\01setenv.txt
-)
-popd
-REM
-REM Cleanup any previous mount points and then mount boot.wim
-REM
-if %osresp%==10 Dism /Cleanup-Mountpoints
-REM
-REM Let's get to work
-REM First, delete any existing WinPE folders or ISO files
-REM
-rd %fname% /s /q 2>NUL
-del %isofilespec% 2>NUL
-echo Creating WinPE workspace >>%logdir%\startlog.txt
-call copype %arch% %fname% >%logdir%\02createwinpeworkspace.txt
-popd
-echo Next, mount that WinPE so we can install some Steadier State files
-echo into that WinPE.  This can take a minute or two.
-echo.
-REM
-REM Mount the folder
-REM
-if %osresp%==7 (
-echo Mounting Winpe.wim >>%logdir%\startlog.txt
-imagex /mountrw %fname%\winpe.wim 1 %fname%\mount >%logdir%\03mount.txt
-) else (
-echo Mounting boot.wim >>%logdir%\startlog.txt
-Dism /Mount-Image /ImageFile:%fname%\media\sources\boot.wim /index:1 /MountDir:%fname%\mount >%logdir%\03mount.txt
-)
-set mountrc=!errorlevel!
-if !mountrc!==0 goto :mountok
-echo.
-if %osresp%==7 echo ********** ERROR:  Imagex mount attempt failed ******************
-if %osresp%==10 echo ********** ERROR:  Dism mount attempt failed ******************
-echo.
-echo The answer may simply be an incompletely dismounted previous run
-echo and in that case a simple reboot may clear things up. Here's the 
-echo output from the attempted mount:
-echo ============= OUTPUT STARTS=====================================
-type %logdir%\03mount.txt
-echo ============== OUTPUT ENDS ======================================
-echo.
-echo Exiting.
-goto :badend
+	echo.
+	echo Now I'm ready to prepare your USB stick and/or ISO.
+	echo Confirming, you chose:
+	echo.
+	echo Verified ADK: installed at %_adkbase%
+	echo Verified ADK: installed at %_adkbase% >%_logdir%\startlog.txt
+	echo Log directory=%_logdir%
+	echo Log directory=%_logdir% >>%_logdir%\startlog.txt
+	echo WinPE workspace folder=%_buildpepath%
+	echo (Folder will be automatically deleted once we're finished.)
+	echo WinPE workspace folder=%_buildpepath% >>%_logdir%\startlog.txt
+	echo Location of Steadier State command files=%_srspath%
+	echo Location of Steadier State command files=%_srspath% >>%_logdir%\startlog.txt
+	echo Architecture=%_len% bit.
+	echo Architecture=%_len% bit. >>%_logdir%\startlog.txt
+	echo Make a USB stick=%_makeusb%
+	echo Make a USB stick=%_makeusb% >>%_logdir%\startlog.txt
+	if %_makeusb%==true (
+		echo Drive for USB stick=%_usbdrive%:
+		echo Drive for USB stick=%_usbdrive%: >>%_logdir%\startlog.txt
+	)
+	echo Make an ISO file=%_makeiso%
+	echo Make an ISO file=%_makeiso% >>%_logdir%\startlog.txt
+	if %_makeiso%==true (
+		echo File name and location of ISO file=%_isopath%
+		echo File name and location of ISO file=%_isopath% >>%_logdir%\startlog.txt
+	)
+	echo.
+	echo.
+	echo Please press 'y' and Enter to confirm that you want to
+	set /p _confirmresp=do this, or anything else and Enter to stop.
+	echo.
+	if not '%_confirmresp%'=='y' (
+		goto :badend
+	)
+	
+:setenv
+	echo.
+	echo Buildpe started.  This may take about five to ten minutes.
+	echo If this fails, look in %_logdir% for detailed output and logs
+	echo of each stage of the process.
+	rem
+	rem Create WinPE workspace and ADK path stuff
+	rem
+	pushd
+	echo.
+	echo Setting ADK environment variables >>%_logdir%\startlog.txt
+	call "%_adkbase%\Deployment Tools\DandISetEnv.bat" >%_logdir%\01setenv.txt
+	set _setenvrc=%errorlevel%
+	if %_setenvrc%==0 goto :prepareenv
+	echo.
+	echo =============== ERROR: Setenv attempt failed ==================
+	echo.
+	echo Here's the output from the attempt:
+	echo ======================== OUTPUT STARTS ========================
+	type %_logdir%\01setenv.txt
+	echo ========================= OUTPUT ENDS =========================
+	goto :badend
+	popd
+	
+:prepareenv
+	rem
+	rem Cleanup any previous mount points and then mount boot.wim
+	rem
+	echo Now, clean up any mess from previous BUILDPE runs.
+	echo Cleaning any previous mount points >>%_logdir%\startlog.txt
+	Dism /Cleanup-Mountpoints >%_logdir%\02prepareenv.txt
+	set _cleanrc=%errorlevel%
+	if %_cleanrc%==0 (
+		rd %_buildpepath% /s /q >>%_logdir%\02prepareenv.txt
+		del %_isopath% >>%_logdir%\02prepareenv.txt
+		goto :copype
+	)
+	echo.
+	echo ============= ERROR: Dism Cleanup attempt failed ==============
+	echo.
+	echo The answer may simply be an incompletely dismounted previous
+	echo run and in that case a simple reboot may clear things up.
+	echo Here's the output from the attempted mount:
+	echo ======================== OUTPUT STARTS ========================
+	type %_logdir%\02prepareenv.txt
+	echo ========================= OUTPUT ENDS =========================
+	goto :badend
 
-:mountok
-echo.
-if %osresp%==7 (
-echo WinPE space created with copype and WinPE's boot.wim mounted with ImageX.
-echo Winpe.wim mounted, imagex rc=%mountrc% >>%logdir%\startlog.txt
-) else (
-echo WinPE space created with copype and WinPE's boot.wim mounted with Dism.
-echo boot.wim mounted, dism rc=%mountrc% >>%logdir%\startlog.txt
-)
-echo Creating and copying scripts to the USB stick and/or ISO image...
-md %fname%\mount\srs >nul
-copy %sourceresp%\cvt2vhd.cmd %fname%\mount /y >nul
-copy %sourceresp%\listvolume.txt %fname%\mount\srs /y >nul
-copy %sourceresp%\merge.cmd %fname%\mount\srs /y >nul
-copy %sourceresp%\prepnewpc.cmd %fname%\mount /y >nul
-copy %sourceresp%\rollback.cmd %fname%\mount\srs /y >nul
-copy %sourceresp%\startnethd.cmd %fname%\mount /y >nul
-copy %sourceresp%\winpe.bmp %fname%\mount\windows\system32 /y >nul
-copy %sourceresp%\winpe1.bmp %fname%\mount\srs /y >nul
-REM
-REM different WinPE to differentiate if you booted USB or hard disk
-REM
-if %osresp%==7 copy "%WAIKBase%\%arch%\imagex.exe" "%fname%\mount\windows\system32" /y >%logdir%\04srscopy.txt
-echo @cd \ >> "%fname%\mount\windows\system32\startnet.cmd"
-echo @cls  >> "%fname%\mount\windows\system32\startnet.cmd"
-echo @echo WinPE 3.0 booted from USB stick. >> "%fname%\mount\windows\system32\startnet.cmd"
-echo @echo. >> "%fname%\mount\windows\system32\startnet.cmd"
-echo @echo You may use the command prepnewpc to wipe this computer's >> "%fname%\mount\windows\system32\startnet.cmd"
-echo @echo hard disk, install WinPE and get it ready to deploy a new >> "%fname%\mount\windows\system32\startnet.cmd"
-echo @echo rollback-able copy of Windows.  >> "%fname%\mount\windows\system32\startnet.cmd"
-echo @echo. >> "%fname%\mount\windows\system32\startnet.cmd"
-echo @echo Or, if you're using this to create your image.vhd, then  >> "%fname%\mount\windows\system32\startnet.cmd"
-echo @echo hook up your system to some external storage -- image.vhd can   >> "%fname%\mount\windows\system32\startnet.cmd"
-echo @echo be large! -- and use cvt2vhd to create that image.vhd. >> "%fname%\mount\windows\system32\startnet.cmd"
-echo @echo .  >> "%fname%\mount\windows\system32\startnet.cmd"
-echo @echo In any case, I hope that Steadier State is proving useful. >> "%fname%\mount\windows\system32\startnet.cmd"
-echo @echo -- Mark Minasi help@minasi.com, www.steadierstate.com >> "%fname%\mount\windows\system32\startnet.cmd"
-echo @echo This copy of SteadierState has been modified and the source >> "%fname%\mount\windows\system32\startnet.cmd"
-echo @echo can be found at https://github.com/7heMC/SteadierState >> "%fname%\mount\windows\system32\startnet.cmd"
-echo Copied Steadier State files. >>%logdir%\startlog.txt
-REM
-REM Unmount, we're done
-REM
-if %osresp%==7 (
-imagex /unmount %fname%\mount /commit >%logdir%\05unmount.txt
-set unmountrc=!errorlevel!
-if !unmountrc!==0 goto :unmountok
-echo.
-echo ********** ERROR:  Imagex unmount attempt failed ******************
-) else (
-Dism /Unmount-Image /MountDir:%fname%\mount /commit >%logdir%\05unmount.txt
-set unmountrc=!errorlevel!
-if !unmountrc!==0 goto :unmountok
-echo.
-echo ********** ERROR:  Dism unmount attempt failed ******************
-)
-echo.
-echo The answer may simply be an incompletely dismounted previous run
-echo and in that case a simple reboot may clear things up. Here's the 
-echo output from the attempted mount:
-echo ============= OUTPUT STARTS=====================================
-type %logdir%\05unmount.txt
-echo ============== OUTPUT ENDS ======================================
-echo.
-echo Exiting.
-goto :badend
+:copype
+	rem
+	rem Copy the PE to the workspace
+	rem
+	echo Creating WinPE workspace >>%_logdir%\startlog.txt
+	call copype %_arch% %_buildpepath% >%_logdir%\03copype.txt
+	set _copyperc=%errorlevel%
+	if %_copyperc%==0 goto :mountwim
+	echo.
+	echo =============== ERROR: CopyPE attempt failed ==================
+	echo.
+	echo Here's the output from the attemp:
+	echo ======================== OUTPUT STARTS ========================
+	type %_logdir%\03copype.txt
+	echo ========================= OUTPUT ENDS =========================
+	goto :baddism
+	popd
+	
+:mountwim
+	rem
+	rem Mount the folder
+	rem
+	echo.
+	echo Next, mount the WinPE so we can install some Steadier State
+	echo file into that WinPE.  This can take a minute or two.
+	echo.
+	echo Mounting boot.wim >>%_logdir%\startlog.txt
+	Dism /Mount-Image /ImageFile:%_buildpepath%\media\sources\boot.wim /index:1 /MountDir:%_buildpepath%\mount >%_logdir%\04mountwim.txt
+	set _mountrc=%errorlevel%
+	if %_mountrc%==0 (
+		echo.
+		echo WinPE space created with copype and WinPE's boot.wim.
+		echo boot.wim mounted, mountrc=%_mountrc% >>%_logdir%\startlog.txt
+		goto :srscopy
+	)
+	echo.
+	echo ============== ERROR: Dism mount attempt failed ===============
+	echo.
+	echo The answer may simply be an incompletely dismounted previous run
+	echo and in that case a simple reboot may clear things up. Here's the 
+	echo output from the attempted mount:
+	echo ======================== OUTPUT STARTS ========================
+	type %_logdir%\04mountwim.txt
+	echo ========================= OUTPUT ENDS =========================
+	goto :baddism
 
-:unmountok
-echo Successfully copied files and unmounted boot.wim.
-if %osresp%==7 (
-echo Unmounted winpe.wim, imagex rc=%unmountrc% >>%logdir%\startlog.txt
-REM
-REM Install boot.wim
-REM
-move %fname%\winpe.wim %fname%\iso\sources\boot.wim >>%logdir%\startlog.txt
-REM 
-REM add a noauto.txt so the CD can get you to WinPE
-REM
-echo for convenience>%fname%\iso\noauto.txt
-REM
-REM The ISO folder is now ready
-REM
-echo Moved winpe.wim to ISO folder, folder is ready >>%logdir%\startlog.txt
-REM
-REM Time to make the USB drive
-REM 
-) else (
-echo Unmounted boot.wim, Dism rc=%unmountrc% >>%logdir%\startlog.txt
-)
-echo.
-if %makeusb%==false goto :donecreatingusb
-echo Starting to create USB stick. >>%logdir%\startlog.txt
-if %osresp%==7 (
-REM
-REM WIPE AND REBUILD USB STICK
-REM Sets up DISKPART to be able to create our USB stick.
-REM In the process, we'll have to run DISKPART three times
-REM
-REM STEP ONE: RETRIEVE VOLUME NUMBER
-REM Given a drive letter in %usbdriveletter%, find its volume number
-REM And then given a volume name in %volname%, set the volume up
-REM
-set founddisk=false
-set foundvolume=false
-set volwewant=
-set disknum=
-REM
-REM Create script to get volume list in diskpart
-REM
-echo list volume >%logdir%\diskpart1script.txt
-echo exit >>%logdir%\diskpart1script.txt
-echo Running Diskpart to retrieve volume numbers, this may take a minute... 
-diskpart /s %logdir%\diskpart1script.txt >%logdir%\diskpart1out.txt
-set diskpart1rc=!errorlevel!
-if !diskpart1rc!==0 ((echo Diskpart phase 1 ended successfully, analyzing output.)&(goto :diskpart1ok))
-echo Diskpart phase 1 failed, return code %diskpart1rc%.
-echo It's not really safe to continue -- I'd hate to blow away the wrong
-echo disk! -- so I'm stopping here and here's the Diskpart output -- there
-echo should be a clue in there.
-echo DISKPART OUTPUT:
-type %logdir%\diskpart1out.txt
-echo ================================
-goto :donecreatingusb
+:srscopy
+	echo.
+	echo Creating and copying scripts to the USB stick and/or ISO image...
+	md %_buildpepath%\mount\srs >nul
+	copy %_srspath%\cvt2vhd.cmd %_buildpepath%\mount /y >nul
+	copy %_srspath%\defaultbcd.cmd %_buildpepath%\mount\srs /y >nul
+	copy %_srspath%\firstrun.cmd %_buildpepath%\mount\srs /y >nul
+	copy %_srspath%\listvolume.txt %_buildpepath%\mount\srs /y >nul
+	copy %_srspath%\merge.cmd %_buildpepath%\mount\srs /y >nul
+	copy %_srspath%\nodrives.reg %_buildpepath%\mount\srs /y >nul
+	copy %_srspath%\prepnewpc.cmd %_buildpepath%\mount /y >nul
+	copy %_srspath%\rollback.cmd %_buildpepath%\mount\srs /y >nul
+	copy %_srspath%\startnethd.cmd %_buildpepath%\mount /y >nul
+	rem
+	rem different WinPE to differentiate if you booted USB or hard disk
+	rem
+	echo @cd \ >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @cls  >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo WinPE 3.0 booted from USB stick. >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo. >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo You may use the command prepnewpc to wipe this computer's >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo hard disk, install WinPE and get it ready to deploy a new >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo rollback-able copy of Windows.  >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo. >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo Or, if you're using this to create your image.vhd, then  >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo hook up your system to some external storage -- image.vhd can   >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo be large! -- and use cvt2vhd to create that image.vhd. >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo .  >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo In any case, I hope that Steadier State is proving useful. >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo -- Mark Minasi help@minasi.com, www.steadierstate.com >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo. >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo This copy of SteadierState has been updated to work with >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo Windows 7, 8, 8.1 & 10. The source can be found at >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo https://github.com/7heMC/SteadierState >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo Copied Steadier State files. >>%_logdir%\startlog.txt
+	
+:unmountwim
+	Dism /Unmount-Image /MountDir:%_buildpepath%\mount /commit >%_logdir%\05unmount.txt
+	set unmountrc=%errorlevel%
+	if %unmountrc%==0 (
+		echo.
+		echo Successfully copied files and unmounted boot.wim.
+		echo Unmounted boot.wim, Dism rc=%unmountrc% >>%_logdir%\startlog.txt
+		goto :makeusb
+	)
+	echo.
+	echo ============= ERROR: Dism unmount attempt failed ==============
+	echo.
+	echo The answer may simply be an incompletely dismounted previous run
+	echo and in that case a simple reboot may clear things up. Here's the 
+	echo output from the attempted mount:
+	echo ======================== OUTPUT STARTS ========================
+	type %_logdir%\05unmount.txt
+	echo ========================= OUTPUT ENDS =========================
+	goto :baddism
 
-:diskpart1ok
-REM
-REM Analyzing first diskpart results
-REM 
-for /f "tokens=1-4" %%i in (%logdir%\diskpart1out.txt) do (if %%i%%k==Volume%usbdriveletter% ((set volwewant=%%j)&(set foundvolume=true)))
-if !foundvolume!==false ((Echo unable to find drive %usbdriveletter%: in this Diskpart output:)&(type diskpart1out.txt)&(echo Unable to set USB stick to "active" automatically.)&(echo Consult the documentation for instructions on doing it manually.)&(goto :badend))
-if !foundvolume!==true (echo Success; drive %usbdriveletter% is on volume number %volwewant%.) 
-REM
-REM Now build script #2: given a volume number, what's the number of the disk that it is on?
-REM
-echo select volume !volwewant! >%logdir%\diskpart2script.txt
-echo detail volume >>%logdir%\diskpart2script.txt
-echo exit >>%logdir%\diskpart2script.txt
-REM
-REM Run the script
-REM
-diskpart /s %logdir%\diskpart2script.txt >%logdir%\diskpart2out.txt
-set diskpart2rc=!errorlevel!
-if !diskpart2rc!==0 ((echo Diskpart phase 2 completed successfully. Now analyzing output.)&(goto :findusbdisk))
-echo Diskpart failed with return code !diskpart2rc!.  Unable to retrieve disk number for USB stick, USB prep failed.
-goto :donecreatingusb
+:makeusb
+	if %_makeusb%==false goto :makeiso
+	echo.
+	echo Starting to create USB stick. >>%_logdir%\startlog.txt
+	echo I'll copy the WinPE source to the USB stick, using
+	echo MakeWinPEMedia.  It's a big file, so this may take a minute.
+	call MakeWinPEMedia /ufd /f %_buildpepath% %_usbdrive%: >%_logdir%\06makeusb.txt
+	set _makewinpeufdrc=%errorlevel%
+	if %_makewinpeufdrc%==0 (
+		echo.
+		echo MakeWinPEMedia completed successfully.
+		echo USB drive at %_usbdrive%: now ready.
+		echo USB stick completed. >>%_logdir%\startlog.txt
+		set _madeusb=true
+		goto :makeiso
+	)
+	echo.
+	echo =============== ERROR: MakeWinPE attempt failed ===============
+	echo.
+	echo MakeWinPEMedia failed with return code %makewinpeufdrc%.
+	echo USB stick NOT successfully created.
+	echo ======================== OUTPUT STARTS ========================
+	type %_logdir%\06makeusb.txt
+	echo ========================= OUTPUT ENDS =========================
+	set _madeusb=false
+	goto :makeiso
 
-:findusbdisk
-REM
-REM Second results
-REM
-for /f "tokens=1-3" %%i in (%logdir%\diskpart2out.txt) do ( if *Disk==%%i%%j ( (set disknum=%%k)&(set founddisk=true) ) )
-if !founddisk!==false ((Echo ERROR: failed to identify the volume's disk number, can't build the USB stick.  Consult the documentation or build an ISO and use a CD)&(echo.)&(goto :badend))
-echo Success; drive %usbdriveletter%: is on disk number !disknum!.
-echo Formatting the USB stick now.
-REM
-REM Write the final diskpart script now
-REM 
-echo select disk !disknum! >%logdir%\diskpart3script.txt
-echo clean >>%logdir%\diskpart3script.txt
-echo create partition primary >>%logdir%\diskpart3script.txt
-echo active >>%logdir%\diskpart3script.txt
-echo format fs=fat32 quick label=%volname% >>%logdir%\diskpart3script.txt
-echo assign letter=%usbdriveletter% >>%logdir%\diskpart3script.txt
-echo exit >>%logdir%\diskpart3script.txt
-REM
-REM Final Diskpart run
-REM
-diskpart /s %logdir%\diskpart3script.txt >%logdir%\diskpart3out.txt
-set diskpart3rc=!errorlevel!
-if !diskpart3rc!==0 ((echo Diskpart phase 3 completed successfully, USB stick formatted.)&(goto :copytousb))
-echo Diskpart failed with return code !diskpart3rc!.  USB stick build failed.
-goto :donecreatingusb
+:makeiso
+	if %_makeiso%==false goto :cleanup
+	echo Creating ISO with MakeWinPEMedia... >>%_logdir%\startlog.txt
+	call MakeWinPEMedia /iso /f %_buildpepath% %_isopath% >%_logdir%\07makeiso.txt
+	set _makewinpeisorc=%errorlevel%
+	if %makewinpeisorc%==0 (
+		echo.
+		echo MakeWinPEMedia succeeded. Your ISO is in %_isopath%.
+		echo MakeWinPEMedia completed >>%_logdir%\startlog.txt
+		set _madeiso=true
+		goto :errorcheck
+	)
+	echo.
+	echo =============== ERROR: MakeWinPE attempt failed ===============
+	echo.
+	echo MakeWinPEMedia failed with return code %makewinpeisorc%.
+	echo ISO was NOT successfully created.
+	echo ======================== OUTPUT STARTS ========================
+	type %_logdir%\07makeiso.txt
+	echo ========================= OUTPUT ENDS =========================
+	set _madeiso=false
+	goto :errorcheck
 
-:copytousb
-echo.
-echo Next, I'll copy the WinPE source to the USB stick and/or
-echo ISO file, using Robocopy.  It's a big file, so this may take a
-echo minute.
-echo.
-robocopy %fname%\ISO\ %dl% /e >%logdir%\05makeusb.txt
-set robocopyrc=!errorlevel!
-if !robocopyrc!==0 ((echo Robocopy completed successfully.)&(set madeusb=true)&(goto :usbok))
-echo Robocopy failed with return code !robocopyrc!.  USB stick NOT successfully created.
-set madeusb=false
-goto :donecreatingusb
-) else (
-echo I'll copy the WinPE source to the USB stick and/or
-echo ISO file, using MakeWinPEMedia.  It's a big file, so this may take a
-echo minute.
-echo.
-call MakeWinPEMedia /ufd /f %fname% %dl% >%logdir%\05makeusb.txt
-set makewinpeufdrc=!errorlevel!
-if !makewinpeufdrc!==0 ((echo MakeWinPEMedia completed successfully.)&(set madeusb=true)&(goto :usbok))
-echo MakeWinPEMedia failed with return code !makewinpeufdrc!.  USB stick NOT successfully created.
-set madeusb=false
-goto :donecreatingusb
-)
+:errorcheck
+	if '%_madeiso%%_madeusb%'=='falsefalse' (
+		echo Errors were encountered and BuildPE was unable to prepare an
+		echo USB or create an ISO. Check %_logdir%\startlog.txt for more
+		echo details.
+		goto :badend
+	)
+	goto :goodend
+	
+:goodend
+	echo.
+	echo BuildPE finished successfully.  Cleaning up... >>%_logdir%\startlog.txt
+	call :cleanup
+	echo.
+	echo Done.  Now that you have a USB stick and/or an ISO, you can use
+	echo them either to convert a working Windows system into one that
+	echo can be protected by Steadier State's "Roll Back Windows"
+	echo feature, or you can use them to prepare a system to get a
+	echo Steadier State-equipped image deployed to it.
+	echo.
+	echo In both cases, start by booting the system with the USB/CD.
+	echo Then, to convert a working Windows system to an SrS-ready
+	echo image, run "cvt2vhd."  Alternatively, to get a system ready for
+	echo deployment, run "prepnewpc." There are more instructions for
+	echo using those command files in the documentation. They do also
+	echo include some built-in documentation.
+	echo.
+	echo Thanks for trying Steadier State, I hope it's useful.
+	echo -- Mark Minasi help@minasi.com www.steadierstate.com
+	echo.
+	echo This copy of SteadierState has been updated to work with
+	echo Windows 7, 8, 8.1 & 10. The source can be found at
+	echo https://github.com/7heMC/SteadierState
+	goto :end
 
-:usbok
-echo.
-echo USB drive at %usbdriveletter%: now ready.
-echo.
-echo USB stick completed. >>%logdir%\startlog.txt
-
-:donecreatingusb
-if %makeiso%==false goto :donewithiso
-REM
-REM this should work, as we should still be in the
-REM WinPE workspace folder
-REM
-if %osresp%==7 (
-echo Creating ISO with oscdimg... >>%logdir%\startlog.txt
-oscdimg -h -n -betfsboot.com ISO %isofilespec% >%logdir%\06makeiso.txt
-set oscdrc=!errorlevel!
-if !oscdrc!==0 ((echo OSCDIMG succeeded, return code !oscdrc!.)&(echo OSCDIMG complete with rc=!oscdrc! >>%logdir%\startlog.txt)&(set madeiso=true)&(goto :donewithiso))
-echo.
-echo Warning: OSCDIMG returned error code !oscdrc!, ISO may not have been
-echo written right.
-set madeiso=false
-goto :donewithiso
-) else (
-echo Creating ISO with MakeWinPEMedia... >>%logdir%\startlog.txt
-call MakeWinPEMedia /iso /f %fname% %isofilespec% >%logdir%\06makeiso.txt
-set makewinpeisorc=!errorlevel!
-if !makewinpeisorc!==0 ((echo MakeWinPEMedia succeeded, return code !makewinpeisorc!.)&(echo MakeWinPEMedia complete with rc=!makewinpeisorc! >>%logdir%\startlog.txt)&(set madeiso=true)&(goto :donewithiso))
-echo.
-echo Warning: MakeWinPEMedia returned error code !makewinpeisorc!, ISO may not have been
-echo written right.
-set madeiso=false
-goto :donewithiso
-)
-
-:donewithiso
-if '%madeiso%%madeusb%'=='falsefalse' ((echo Errors were encountered and BuildPE was unable to prepare an USB or create an ISO. Check %logdir%\startlog.txt for more details.)&(goto :badend))
-REM
-REM finished without problems
-REM
-echo BuildPE finished successfully.  Cleaning up... >>%logdir%\startlog.txt
-REM
-REM change path so we can delete the WinPE workspace
-REM
-c:
-pushd c:\
-REM
-REM get rid of old WinPE workspace
-REM
-echo Deleting WinPE workspace. >>%logdir%\startlog.txt
-if not %fname%== rd %fname% /s /q 2>nul
-popd
-echo.
-echo Done.  Now that you have a USB stick and/or an ISO, you can use them
-echo either to convert a working Windows system into one that can be 
-echo protected by Steadier State's "Roll Back Windows" feature, or you can
-echo use them to prepare a system to get a Steadier State-equipped image
-echo deployed to it.
-echo.
-echo In both cases, start by booting the system with the USB stick/CD.
-echo Then, to convert a working Windows system to an SS-ready image, run
-echo "cvt2vhd."  Alternatively, to get a system ready for deployment, run
-echo "prepnewpc."  There are more detailed instructions for using those
-echo command files in the documentation, or they also include some built-
-echo in documentation.
-echo.
-if %madeiso%==true echo Your ISO is in %isofilespec%.
-echo.
-echo Thanks for trying Steadier State, I hope it's useful.
-echo -- Mark Minasi help@minasi.com www.steadierstate.com
-echo This copy of SteadierState has been modified and the source
-echo can be found at https://github.com/7heMC/SteadierState
-echo.
-set waikase=
-set adkbase=
-set makeiso=
-set madeiso=
-set makeusb=
-set madeusb=
-set usbdriveletter=
-set logdir=
-set total=
-set usbresp=
-set usbdriveletter=
-set isoresp=
-set osresp=
-set archresp=
-set arch=
-set len=
-set sourceresp=
-set fname=
-set volname=
-set isofilespec=
-set nousbdrive=
-set confirmresp=
-set dl=
-set mountrc=
-set unmountrc=
-set founddisk=
-set foundvolume=
-set volwewant=
-set disknum=
-set diskpart1rc=
-set diskpart2rc=
-set diskpart3rc=
-set robocopyrc=
-set makewinpeufdrc=
-set oscdrc=
-set makewinpeisorc=
-goto :eof
-
-:nowaik
-echo For this to work, you MUST have the Windows Automated Installation
-echo Kit downloaded and installed in its default location, or modify the
-echo "set waikbase=" line in the command file with the WAIK's alternate
-echo location; exiting.
-goto :badend
-
-:noadk
-echo For this to work, you MUST have the Windows Assessment and Deployment
-echo Kit downloaded and installed in its default location, or modify the
-echo "set adkbase=" line in the command file with the ADK's alternate
-echo location; exiting.
-goto :badend
-
-:notsupported
-echo I'm sorry, but Windows 8/8.1 is not currently supported in this
-echo version of SteadierState. Only Windows 7 and Windows 10 are currently
-echo supported. Selecting 10 may work for Windows 8 or 8.1.
-echo However, this is untested. Exiting...
-goto :done
-
+:baddism
+	echo.
+	echo Forcing dism to unmount and clean any mount points
+	Dism /Unmount-Image /MountDir:%_buildpepath%\mount /discard >%_logdir%\08baddism.txt
+	Dism /Cleanup-Mountpoints >>%_logdir%\08baddism.txt
+	
 :badend
-echo.
-echo Buildpe failed and terminated for some reason.  If you'd like to look
-echo further into what might have failed, back up the folder
-echo %logdir% and the files in it and examine them for clues
-echo about what went wrong.  Cleaning up temporary files...
-echo.
-if %osresp%==7 (
-imagex /unmount mount > %logdir%\badendimagexunmount.txt
-) else (
-Dism /Unmount-Image /MountDir:%fname%\mount /discard > %logdir%\badenddismunmount.txt
-)
-REM
-REM change path so we can delete the WinPE workspace
-REM
-c:
-cd\
-REM
-REM get rid of old WinPE workspace
-REM
-echo Deleting WinPE workspace. >>%logdir%\startlog.txt
-if not '%fname%'=='' rd %fname% /s /q 2>nul
-set waikase=
-set adkbase=
-set makeiso=
-set madeiso=
-set makeusb=
-set madeusb=
-set usbdriveletter=
-set logdir=
-set total=
-set usbresp=
-set usbdriveletter=
-set isoresp=
-set osresp=
-set archresp=
-set arch=
-set len=
-set sourceresp=
-set fname=
-set volname=
-set isofilespec=
-set nousbdrive=
-set confirmresp=
-set dl=
-set mountrc=
-set unmountrc=
-set founddisk=
-set foundvolume=
-set volwewant=
-set disknum=
-set diskpart1rc=
-set diskpart2rc=
-set diskpart3rc=
-set robocopyrc=
-set makewinpeufdrc=
-set oscdrc=
-set makewinpeisorc=
-goto :eof
+	echo.
+	echo Buildpe failed and terminated for some reason. If you'd like to
+	echo look further into what might have failed, back up the folder
+	echo %_logdir% and the files in it and examine them for clues
+	echo about what went wrong.  Cleaning up temporary files...
+	echo.
+	call :cleanup
+	goto :end
 
-:done
+:cleanup
+	rem
+	rem Change to different directory so we can delete %_buildpepath%
+	rem
+	cd %_logdir%
+	echo Deleting WinPE workspace. >>%_logdir%\startlog.txt
+	if not '%_buildpepath%'=='' rd %_buildpepath% /s /q
+	exit /b
+
+:end
+	endlocal
+	echo.
+	echo Exiting...
+	echo.
