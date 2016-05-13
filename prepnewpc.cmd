@@ -27,7 +27,8 @@
 	echo that image.vhd on the C: drive you can boot a system to get it
 	echo ready to be able to use that VHD.  You can do it by simply
 	echo restarting your computer.
-	
+	pause
+
 :setup
 	rem
 	rem Check that we're running from the root of the boot device
@@ -48,21 +49,24 @@
 
 :bioscheck
 	rem
-	rem Use bcdedit to find out if PE was booted using uefi
+	rem Use wpeutil and reg to find out if PE was booted using bios/uefi
 	rem
-	if exist %temp%\temp.txt del %temp%\temp.txt
-	bcdedit /enum {current} /v | find /c "efi" >%temp%\temp.txt
-	set _eficount=
-	set /p _eficount= <%temp%\temp.txt
-	del %temp%\temp.txt
-	if %_eficount%==0 (
-		set _biostype=bios
+	wpeutil UpdateBootInfo
+	for /f "tokens=2* delims=    " %%a in ('reg query HKLM\System\CurrentControlSet\Control /v PEFirmwareType') DO set _firmware=%%b
+	if %_firmware%==0x1 (
+		echo The PC is booted in BIOS mode.
+		set _firmware=bios
 		set _winload=\windows\system32\boot\winload.exe
-		
-	) else (
-		set _biostype=uefi
+	)
+	if %_firmware%==0x2 (
+		echo The PC is booted in UEFI mode.
+		set _firmware=uefi
 		set _winload=\windows\system32\boot\winload.efi
 	)
+	echo.
+	echo Unable to determine if the system was booted using BIOS or
+	echo UEFI. It is not safe to continue.
+	goto :badend
 
 :extdrivequestion
 	rem
@@ -125,7 +129,7 @@
 	echo after this runs and you'd end up with a copy of Windows, but
 	echo with an extra "maintenance" copy of WinPE that you can access
 	echo to fix various "cannot boot" problems.)
-	if %_biostype%==uefi (
+	if %_firmware%==uefi (
 		echo Next, we will create a 100MB uefi partition, that will contain
 		echo the Windows boot manager.
 	)
@@ -236,12 +240,12 @@
 	echo Partition
 	echo select disk 0 >%_actdrive%\makesrs.txt
 	echo clean >>%_actdrive%\makesrs.txt
-	if %_biostype%==uefi echo convert gpt >>%_actdrive%\makesrs.txt
+	if %_firmware%==uefi echo convert gpt >>%_actdrive%\makesrs.txt
 	echo create partition primary size=1000 >>%_actdrive%\makesrs.txt
 	echo format quick fs=ntfs label="SrS_Tools" >>%_actdrive%\makesrs.txt
 	echo assign letter=%_srsdrive% >>%_actdrive%\makesrs.txt
-	if %_biostype%==uefi echo set id="de94bba4-06d1-4d40-a16a-bfd50179d6ac" >>%_actdrive%\makesrs.txt
-	if %_biostype%==uefi echo gpt attributes=0x8000000000000001 >>%_actdrive%\makesrs.txt
+	if %_firmware%==uefi echo set id="de94bba4-06d1-4d40-a16a-bfd50179d6ac" >>%_actdrive%\makesrs.txt
+	if %_firmware%==uefi echo gpt attributes=0x8000000000000001 >>%_actdrive%\makesrs.txt
 	echo rescan >>%_actdrive%\makesrs.txt
 	echo exit >>%_actdrive%\makesrs.txt
 	diskpart /s %_actdrive%\makesrs.txt
@@ -251,7 +255,7 @@
 		echo Diskpart successfully created SrS Tools Partition.
 		echo We will use %_srsdrive%:
 		set _srsdrive=%_srsdrive%:
-		if %_biostype%==uefi (
+		if %_firmware%==uefi (
 			goto :findefidrive
 		) else (
 			goto :findphydrive
@@ -372,7 +376,7 @@
 	echo create partition primary  >>%_actdrive%\makephy.txt
 	echo format quick fs=ntfs label="Physical_Drive" >>%_actdrive%\makephy.txt
 	echo assign letter=%_phydrive% >>%_actdrive%\makephy.txt
-	if %_biostype%==uefi echo gpt attributes=0x8000000000000001 >>%_actdrive%\makephy.txt
+	if %_firmware%==uefi echo gpt attributes=0x8000000000000001 >>%_actdrive%\makephy.txt
 	echo rescan >>%_actdrive%\makephy.txt
 	echo exit >>%_actdrive%\makephy.txt
 	diskpart /s %_actdrive%\makephy.txt
@@ -544,11 +548,11 @@
 	echo With that out of the way, we'll need some extra boot files that
 	echo do not ship with WinPE, so we'll copy them from image.vhd with
 	echo BCDBoot.
-	if %_biostype%==bios (
+	if %_firmware%==bios (
 		set _bcdstore=/store %_srsdrive%\Boot\BCD
 		bcdboot %_vhddrive%\windows /s %_srsdrive% /f ALL
 	)
-	if %_biostype%==uefi (
+	if %_firmware%==uefi (
 		set _bcdstore=/store %_efidrive%\EFI\Microsoft\Boot\BCD
 		bcdboot %_vhddrive%\windows /s %_efidrive% /f ALL
 	)

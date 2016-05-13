@@ -26,22 +26,25 @@ wpeinit
 
 :bioscheck
 	rem
-	rem Use bcdedit to find out if PE was booted using uefi
+	rem Use wpeutil and reg to find out if PE was booted using bios/uefi
 	rem
-	if exist %temp%\temp.txt del %temp%\temp.txt
-	bcdedit /enum {current} /v | find /c "efi" >%temp%\temp.txt
-	set _eficount=
-	set /p _eficount= <%temp%\temp.txt
-	del %temp%\temp.txt
-	if %_eficount%==0 (
-		set _biostype=bios
+	wpeutil UpdateBootInfo
+	for /f "tokens=2* delims=    " %%a in ('reg query HKLM\System\CurrentControlSet\Control /v PEFirmwareType') DO set _firmware=%%b
+	if %_firmware%==0x1 (
+		echo The system was booted in BIOS mode.
+		set _firmware=bios
 		set _winload=\windows\system32\boot\winload.exe
 		set _bcdstore=
-		
-	) else (
-		set _biostype=uefi
+	)
+	if %_firmware%==0x2 (
+		echo The system was booted in UEFI mode.
+		set _firmware=uefi
 		set _winload=\windows\system32\boot\winload.efi
 	)
+	echo.
+	echo Unable to determine if the system was booted using BIOS or
+	echo UEFI. It is not safe to continue.
+	goto :badend
 
 :findphynum
 	rem
@@ -110,8 +113,8 @@ wpeinit
 		echo using %_phydrive%:
 		set _phydrive=%_phydrive%:
 		del %_actdrive%\mountphy.txt
-		if %_biostype%==bios goto :vhdcheck
-		if %_biostype%==uefi goto :findefinum
+		if %_firmware%==bios goto :vhdcheck
+		if %_firmware%==uefi goto :findefinum
 	)
 	echo.
 	echo Diskpart failed to mount the Physical Drive Partition, return
