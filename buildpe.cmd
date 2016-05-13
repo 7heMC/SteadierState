@@ -642,7 +642,7 @@
 	echo Creating ISO with MakeWinPEMedia... >>%_logdir%\startlog.txt
 	call MakeWinPEMedia /iso /f %_buildpepath% %_isopath% >%_logdir%\07makeiso.txt
 	set _makewinpeisorc=%errorlevel%
-	if %makewinpeisorc%==0 (
+	if %_makewinpeisorc%==0 (
 		echo.
 		echo MakeWinPEMedia succeeded. Your ISO is in %_isopath%.
 		echo MakeWinPEMedia completed >>%_logdir%\startlog.txt
