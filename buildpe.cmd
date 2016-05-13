@@ -78,7 +78,7 @@
 	rem
 	rem Check to see if the Windows 10 ADK is installed
 	rem
-	if not exist %_adkbase% (
+	if not exist %_adkbase%\nul (
 		if %_adkcheckcount%==0 (
 			call :adkmissing
 		) else (
@@ -135,7 +135,7 @@
 		del %temp%\temp.txt
 		timeout /t 10 /nobreak >NUL
 		<NUL set /p _progress=.
-		goto :wait
+		goto :adkwait
 	)
 	exit /b
 	
@@ -738,7 +738,7 @@
 	endlocal
 	echo.
 	echo This copy of SteadierState has been updated to work with
-	echo Windows 7, 8, 8.1 & 10. The source can be found at
+	echo Windows 7, 8, 8.1 and 10. The source can be found at
 	echo https://github.com/7heMC/SteadierState
 	echo.
 	echo Exiting...
