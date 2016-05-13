@@ -165,7 +165,7 @@
 	md %_logdir%\test
 	if exist %_logdir%\test (
 		rd %_logdir%\test /q /s
-		goto :logok
+		goto :filessearch
 	)
 	echo.
 	echo I can't seem to delete the old logs; continuing anyway.
@@ -178,7 +178,7 @@
 	set _cmdpath=%0
 	set _cmdname=%~n0%~x0
 	call :strlen _cmdname _strlen
-	call set _srspath=%%cmdpath:~0,-%strlen%%%
+	call set _srspath=%%_cmdpath:~0,-%_strlen%%%
 	goto :filescheck
 
 :strlen <stringVar> <resultVar>
@@ -246,10 +246,6 @@
 		set _filemissing=merge.cmd
 		goto :filemissing
 	)
-	if not exist %_srspath%\nodrives.reg (
-		set _filemissing=nodrives.reg
-		goto :filemissing
-	)
 	if not exist %_srspath%\prepnewpc.cmd (
 		set _filemissing=prepnewpc.cmd
 		goto :filemissing
@@ -263,7 +259,8 @@
 		set _filemissing=startnethd.cmd
 		goto :filemissing
 	)
-	
+	goto :usbquestion
+
 :filemissing
 	rem
 	rem Display which Steadier State files were missing
@@ -577,7 +574,7 @@
 	echo @echo -- Mark Minasi help@minasi.com, www.steadierstate.com >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
 	echo @echo. >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
 	echo @echo This copy of SteadierState has been updated to work with >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
-	echo @echo Windows 7, 8, 8.1 & 10. The source can be found at >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo Windows 7, 8, 8.1 and 10. The source can be found at >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
 	echo @echo https://github.com/7heMC/SteadierState >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
 	echo Copied Steadier State files. >>%_logdir%\startlog.txt
 	
