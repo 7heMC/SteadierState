@@ -78,7 +78,11 @@
 	rem
 	rem Check to see if the Windows 10 ADK is installed
 	rem
-	if not exist %_adkbase%\nul (
+	if exist %_adkbase% (
+		echo.
+		echo Found Windows adk at %_adkbase%
+		goto :admincheck
+	) else (
 		if %_adkcheckcount%==0 (
 			call :adkmissing
 		) else (
@@ -87,10 +91,6 @@
 			echo Please try to install it manually.
 			goto :badend
 		)
-	) else (
-		echo.
-		echo Found Windows adk at %_adkbase%
-		goto :admincheck
 	)
 	
 :adkmissing
