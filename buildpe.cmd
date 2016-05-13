@@ -1,39 +1,65 @@
 @echo off
-rem ====================================================================
-rem 						BUILDPE.CMD
-rem 
-rem Function: automates creating the USB stick or CD used to deploy
-rem 	Steadier State to a system
-rem End product:  an ISO folder and optionally puts it on a USB
-rem 	stick.
-rem
-rem Assumes:ADK installed in default location
-rem 		Can create and delete a folder %temp%\SrS
-rem	Inputs:	Which version of OS to use, Win 7, 8, 10, etc.
-rem    		Which architecture to use, 32 or 64 bit
-rem			Where to write the ISO for a CD if desired
-rem			Drive letter of the USB stick to create if desired
-rem
-rem ADK LOCATION
-rem 	Needs Windows ADK installed in its default location. If
-rem 	that's an issue, change the "_adkbase" variable to point to the
-rem		top level folder wherever the ADK is installed. This script was
-rem		designed to use Windows 10 ADK, which can be installed and used
-rem		on any Windows 7 or newer system. If it is not found, we will
-rem		ask to install it. Previous versions are listed here as well,
-rem		but are untested and should not be used with this script.
-rem		Windows 7 WAIK:
-rem 		http://www.microsoft.com/en-us/download/details.aspx?id=5753
-rem		Windows 8 ADK:
-rem 		http://www.microsoft.com/en-us/download/details.aspx?id=30652
-rem		Windows 8.1 ADK:
-rem 		http://www.microsoft.com/en-US/download/details.aspx?id=39982
-rem		Windows 10 ADK:
-rem 		https://msdn.microsoft.com/en-us/windows/hardware/dn913721.aspx
-rem
+
+:background
+	rem ====================================================================
+	rem 						BUILDPE.CMD
+	rem 
+	rem Function: automates creating the USB stick or CD used to deploy
+	rem 	Steadier State to a system
+	rem End product:  an ISO folder and optionally puts it on a USB
+	rem 	stick.
+	rem
+	rem Assumes:ADK installed in default location
+	rem 		Can create and delete a folder %temp%\SrS
+	rem	Inputs:	Which version of OS to use, Win 7, 8, 10, etc.
+	rem    		Which architecture to use, 32 or 64 bit
+	rem			Where to write the ISO for a CD if desired
+	rem			Drive letter of the USB stick to create if desired
+	rem
+	rem ADK LOCATION
+	rem 	Needs Windows ADK installed in its default location. If
+	rem 	that's an issue, change the "_adkbase" variable to point to the
+	rem		top level folder wherever the ADK is installed. This script was
+	rem		designed to use Windows 10 ADK, which can be installed and used
+	rem		on any Windows 7 or newer system. If it is not found, we will
+	rem		ask to install it. Previous versions are listed here as well,
+	rem		but are untested and should not be used with this script.
+	rem		Windows 7 WAIK:
+	rem 		http://www.microsoft.com/en-us/download/details.aspx?id=5753
+	rem		Windows 8 ADK:
+	rem 		http://www.microsoft.com/en-us/download/details.aspx?id=30652
+	rem		Windows 8.1 ADK:
+	rem 		http://www.microsoft.com/en-US/download/details.aspx?id=39982
+	rem		Windows 10 ADK:
+	rem 		https://msdn.microsoft.com/en-us/windows/hardware/dn913721.aspx
+	rem
+	rem
+	rem Provide user with background information about buildpe.cmd
+	rem
+	echo.
+	echo ===============================================================
+	echo               B U I L D   U S B / I S O  T O O L
+	echo ===============================================================
+	echo.
+	echo This command file (buildpe.cmd) creates the tool you'll
+	echo need to get started using Steadier State, the free "Windows
+	echo Rollback," SteadyState-like tool for un-doing all changes
+	echo to a Windows system in under three minutes.  This creates a
+	echo bootable USB stick or CD that you can then use to prepare a
+	echo computer to be roll-back-able.
+	echo.
+	echo You've got some options about building that tool, however, so
+	echo this command file will have to ask a few questions before we
+	echo get started.
+	echo.
+	echo To stop this program, you can type the word "end" as the answer
+	echo to any question.  Please type all responses in LOWERCASE!
 
 :setup
-	setlocal ENABLEDELAYEDEXPANSION
+	rem
+	rem Perform a few checks and variable assignments for use later
+	rem
+	setlocal
 	cls
 	if %processor_architecture%==AMD64 (
 		set _arch=amd64
@@ -49,6 +75,9 @@ rem
 	set _adkcheckcount=0
 	
 :adkcheck
+	rem
+	rem Check to see if the Windows 10 ADK is installed
+	rem
 	if not exist %_adkbase% (
 		if %_adkcheckcount%==0 (
 			call :adkmissing
@@ -65,6 +94,9 @@ rem
 	)
 	
 :adkmissing
+	rem
+	rem The Windows 10 ADK was not found; ask user how to proceed
+	rem
 	echo For this to work, you MUST have the Windows Assessment and
 	echo Deployment Kit downloaded and installed in its default
 	echo location, or modify the "set _adkbase=" line in the command
@@ -76,6 +108,9 @@ rem
 	goto :badend
 
 :adkinstall
+	rem
+	rem Download and install the Windows 10 ADK
+	rem
 	echo You have chosen to install the Windows 10 ADK. I will now download
 	echo it using bitsadmin and install it to the default location.
 	set _adkcheckcount=1
@@ -88,6 +123,10 @@ rem
 	goto :adkcheck
 
 :adkwait
+	rem
+	rem Subroutine for checking to see if the Windows 10 ADK is finished
+	rem installing
+	rem
 	if exist %temp%\temp.txt del %temp%\temp.txt
 	tasklist /nh |find /c "adksetup.exe">%temp%\temp.txt
 	set _adksetupactive=
@@ -109,7 +148,7 @@ rem
 	set _admin=
 	set /p _admin= <%temp%\temp.txt
 	del %temp%\temp.txt
-	if %_admin%==1 goto :adminok
+	if %_admin%==1 goto :logdir
 	echo.
 	echo I'm sorry, but you must be running from an elevated 
 	echo command prompt to run this command file.  Start a new 
@@ -118,7 +157,7 @@ rem
 	echo a UAC prompt.
 	goto :badend
 
-:adminok
+:logdir
 	rem
 	rem Set up and test logging
 	rem
@@ -130,32 +169,11 @@ rem
 	)
 	echo.
 	echo I can't seem to delete the old logs; continuing anyway.
-	echo.
-
-:logok
-	echo.
-	echo ___________________________________________________________
-	echo     B U I L D   U S B / I S O  T O O L
-	echo ___________________________________________________________
-	echo.
-	echo This command file (buildpe.cmd) creates the tool you'll
-	echo need to get started using Steadier State, the free "Windows
-	echo Rollback," SteadyState-like tool for un-doing all changes
-	echo to a Windows system in under three minutes.  This creates a
-	echo bootable USB stick or CD that you can then use to prepare a
-	echo computer to be roll-back-able.
-	echo.
-	echo You've got some options about building that tool, however, so
-	echo this command file will have to ask a few questions before we
-	echo get started.
-	echo.
-	echo To stop this program, you can type the word "end" as the answer
-	echo to any question.  Please type all responses in LOWERCASE!
 
 :filessearch
 	rem
 	rem Check to see if all of the Steadier State files are in the same
-	rem folder.
+	rem folder. Use the name of the this file to determine it's location
 	rem
 	set _cmdpath=%0
 	set _cmdname=%~n0%~x0
@@ -164,8 +182,11 @@ rem
 	goto :filescheck
 
 :strlen <stringVar> <resultVar>
+	rem
+	rem Subroutine to find the length of a string
+	rem
 	(   
-		setlocal EnableDelayedExpansion
+		setlocal enabledelayedexpansion
 		set "_string=!%~1!#"
 		set "_strlen=0"
 		for %%a in (4096 2048 1024 512 256 128 64 32 16 8 4 2 1) do (
@@ -182,13 +203,17 @@ rem
 	)
 	
 :filesquestion
+	rem
+	rem The Steadier State files were not found in the same location as
+	rem as this file...need user input to find them
+	rem
 	echo.
 	echo ===============================================================
 	echo Where are the Steadier State files?
 	echo.
 	echo We were unable to automatically locate the files. Where is the
 	echo folder with the Steadier State command files, i.e. the folder
-	echo containing cvt2vhd.cmd, defaultbcd.cmd, firstrun.cmd,
+	echo containing bcddefault.cmd, cvt2vhd.cmd, firstrun.cmd,
 	echo listvolume.txt, merge.cmd, nodrives.reg, prepnewpc.cmd,
 	echo rollback.cmd, startnethd.cmd. Please enter the folder name here
 	echo and press Enter; again, to stop this program just type 'end'
@@ -196,46 +221,63 @@ rem
 	if '%_srspath%'=='end' goto :end
 	
 :filescheck
+	rem
+	rem Make sure all of the necessary Steadier State files are present
+	rem
 	echo.
 	echo Checking for the files in folder "%_srspath%"...
-	if not exist %_srspath%\cvt2vhd.cmd (
-		echo cvt2vhd.cmd not found in %_srspath%.
-		goto :filesquestion
+	if not exist %_srspath%\bcddefault.cmd (
+		set _filemissing=bcddefault.cmd
+		goto :filemissing
 	)
-	if not exist %_srspath%\defaultbcd.cmd (
-		echo defaultbcd.cmd not found in %_srspath%.
-		goto :filesquestion
+	if not exist %_srspath%\cvt2vhd.cmd (
+		set _filemissing=cvt2vhd.cmd
+		goto :filemissing
 	)
 	if not exist %_srspath%\firstrun.cmd (
-		echo firstrun.cmd not found in %_srspath%.
-		goto :filesquestion
+		set _filemissing=firstrun.cmd
+		goto :filemissing
 	)
 	if not exist %_srspath%\listvolume.txt (
-		echo listvolume.txt not found in %_srspath%.
-		goto :filesquestion
+		set _filemissing=listvolume.txt
+		goto :filemissing
 	)
 	if not exist %_srspath%\merge.cmd (
-		echo merge.cmd not found in %_srspath%.
-		goto :filesquestion
+		set _filemissing=merge.cmd
+		goto :filemissing
 	)
 	if not exist %_srspath%\nodrives.reg (
-		echo nodrives.reg not found in %_srspath%.
-		goto :filesquestion
+		set _filemissing=nodrives.reg
+		goto :filemissing
 	)
 	if not exist %_srspath%\prepnewpc.cmd (
-		echo prepnewpc.cmd not found in %_srspath%.
-		goto :filesquestion
+		set _filemissing=prepnewpc.cmd
+		goto :filemissing
 	)
 	if not exist %_srspath%\rollback.cmd (
-		echo rollback.cmd not found in %_srspath%.
-		goto :filesquestion
+		set _filemissing=rollback.cmd
+		goto :filemissing
+	)
 	)
 	if not exist %_srspath%\startnethd.cmd (
-		echo startnethd.cmd not found in %_srspath%.
-		goto :filesquestion
+		set _filemissing=startnethd.cmd
+		goto :filemissing
 	)
-
+	
+:filemissing
+	rem
+	rem Display which Steadier State files were missing
+	rem
+	echo.
+	echo -------- ERROR -----------
+	echo.
+	echo %_filemissing% not found in %_srspath%.
+	goto :filesquestion
+	
 :usbquestion
+	rem
+	rem Need user input about whether to create an USB
+	rem
 	echo.
 	echo ===============================================================
 	echo Do you want to prepare an USB stick?
@@ -268,7 +310,7 @@ rem
 	echo.
 	if not exist %_usbdrive%:\ (
 		echo.
-		echo ---- ERROR ----
+		echo -------- ERROR -----------
 		echo.
 		echo There doesn't seem to be a USB stick at %_usbdrive%:.  Let's
 		echo try again.
@@ -281,11 +323,17 @@ rem
 	goto :isoquestion
 
 :nousbstick
+	rem
+	rem The user has opted not to create an USB
+	rem
 	set _makeusb=false
 	echo.
 	echo Okay, no need to create a bootable USB stick.
 	
 :isoquestion
+	rem
+	rem Need user input about whether to create an ISO
+	rem
 	echo.
 	echo.
 	echo ===============================================================
@@ -307,6 +355,9 @@ rem
 	goto :isousbcheck
 
 :noiso
+	rem
+	rem The user has opted not to create an ISO
+	rem
 	set _makeiso=false
 	echo.
 	echo Okay, I won't create an ISO file.
@@ -324,7 +375,9 @@ rem
 	goto :badend
 
 :archquestion
-	echo.
+	rem
+	rem Need user input about which architecture to use
+	rem
 	echo.
 	echo =========================================================
 	echo 32 bit or 64 bit?
@@ -355,6 +408,9 @@ rem
 	goto :archquestion
 
 :confirm
+	rem
+	rem Confirm with user before proceeding
+	rem
 	echo.
 	echo Now I'm ready to prepare your USB stick and/or ISO.
 	echo Confirming, you chose:
@@ -386,21 +442,19 @@ rem
 	echo.
 	echo Please press 'y' and Enter to confirm that you want to
 	set /p _confirmresp=do this, or anything else and Enter to stop.
-	echo.
-	if not '%_confirmresp%'=='y' (
-		goto :badend
-	)
-	
-:setenv
+	if not '%_confirmresp%'=='y' goto :badend
 	echo.
 	echo Buildpe started.  This may take about five to ten minutes.
 	echo If this fails, look in %_logdir% for detailed output and logs
 	echo of each stage of the process.
+	
+:setenv
 	rem
 	rem Create WinPE workspace and ADK path stuff
 	rem
 	pushd
 	echo.
+	echo Setting ADK environment variables
 	echo Setting ADK environment variables >>%_logdir%\startlog.txt
 	call "%_adkbase%\Deployment Tools\DandISetEnv.bat" >%_logdir%\01setenv.txt
 	set _setenvrc=%errorlevel%
@@ -419,6 +473,7 @@ rem
 	rem
 	rem Cleanup any previous mount points and then mount boot.wim
 	rem
+	echo.
 	echo Now, clean up any mess from previous BUILDPE runs.
 	echo Cleaning any previous mount points >>%_logdir%\startlog.txt
 	Dism /Cleanup-Mountpoints >%_logdir%\02prepareenv.txt
@@ -441,8 +496,10 @@ rem
 
 :copype
 	rem
-	rem Copy the PE to the workspace
+	rem Use copype to create the workspace
 	rem
+	echo.
+	echo Creating WinPE workspace
 	echo Creating WinPE workspace >>%_logdir%\startlog.txt
 	call copype %_arch% %_buildpepath% >%_logdir%\03copype.txt
 	set _copyperc=%errorlevel%
@@ -459,12 +516,11 @@ rem
 	
 :mountwim
 	rem
-	rem Mount the folder
+	rem Mount boot.wim in the created folder
 	rem
 	echo.
 	echo Next, mount the WinPE so we can install some Steadier State
 	echo file into that WinPE.  This can take a minute or two.
-	echo.
 	echo Mounting boot.wim >>%_logdir%\startlog.txt
 	Dism /Mount-Image /ImageFile:%_buildpepath%\media\sources\boot.wim /index:1 /MountDir:%_buildpepath%\mount >%_logdir%\04mountwim.txt
 	set _mountrc=%errorlevel%
@@ -486,11 +542,15 @@ rem
 	goto :baddism
 
 :srscopy
+	rem
+	rem Copy the Steadier State files to the image
+	rem
 	echo.
 	echo Creating and copying scripts to the USB stick and/or ISO image...
+	echo Copying scripts to the image >>%_logdir%\startlog.txt
 	md %_buildpepath%\mount\srs >nul
+	copy %_srspath%\bcddefault.cmd %_buildpepath%\mount\srs /y >nul
 	copy %_srspath%\cvt2vhd.cmd %_buildpepath%\mount /y >nul
-	copy %_srspath%\defaultbcd.cmd %_buildpepath%\mount\srs /y >nul
 	copy %_srspath%\firstrun.cmd %_buildpepath%\mount\srs /y >nul
 	copy %_srspath%\listvolume.txt %_buildpepath%\mount\srs /y >nul
 	copy %_srspath%\merge.cmd %_buildpepath%\mount\srs /y >nul
@@ -522,6 +582,12 @@ rem
 	echo Copied Steadier State files. >>%_logdir%\startlog.txt
 	
 :unmountwim
+	rem
+	rem Unmount the image and commit the changes
+	rem
+	echo.
+	echo Unmounting the image and committing changes
+	echo Unmounting the image and committing changes >>%_logdir%\startlog.txt
 	Dism /Unmount-Image /MountDir:%_buildpepath%\mount /commit >%_logdir%\05unmount.txt
 	set unmountrc=%errorlevel%
 	if %unmountrc%==0 (
@@ -542,6 +608,9 @@ rem
 	goto :baddism
 
 :makeusb
+	rem
+	rem Create an USB if instructed
+	rem
 	if %_makeusb%==false goto :makeiso
 	echo.
 	echo Starting to create USB stick. >>%_logdir%\startlog.txt
@@ -569,6 +638,9 @@ rem
 	goto :makeiso
 
 :makeiso
+	rem
+	rem Create an ISO if instructed
+	rem
 	if %_makeiso%==false goto :cleanup
 	echo Creating ISO with MakeWinPEMedia... >>%_logdir%\startlog.txt
 	call MakeWinPEMedia /iso /f %_buildpepath% %_isopath% >%_logdir%\07makeiso.txt
@@ -592,6 +664,9 @@ rem
 	goto :errorcheck
 
 :errorcheck
+	rem
+	rem Check that USB and/or ISO were created successfully
+	rem
 	if '%_madeiso%%_madeusb%'=='falsefalse' (
 		echo Errors were encountered and BuildPE was unable to prepare an
 		echo USB or create an ISO. Check %_logdir%\startlog.txt for more
@@ -601,6 +676,9 @@ rem
 	goto :goodend
 	
 :goodend
+	rem
+	rem buildpe.cmd completed successfully
+	rem
 	echo.
 	echo BuildPE finished successfully.  Cleaning up... >>%_logdir%\startlog.txt
 	call :cleanup
@@ -620,19 +698,21 @@ rem
 	echo.
 	echo Thanks for trying Steadier State, I hope it's useful.
 	echo -- Mark Minasi help@minasi.com www.steadierstate.com
-	echo.
-	echo This copy of SteadierState has been updated to work with
-	echo Windows 7, 8, 8.1 & 10. The source can be found at
-	echo https://github.com/7heMC/SteadierState
 	goto :end
 
 :baddism
+	rem
+	rem Clean up any leftovers from dism
+	rem
 	echo.
 	echo Forcing dism to unmount and clean any mount points
 	Dism /Unmount-Image /MountDir:%_buildpepath%\mount /discard >%_logdir%\08baddism.txt
 	Dism /Cleanup-Mountpoints >>%_logdir%\08baddism.txt
 	
 :badend
+	rem
+	rem Something failed
+	rem
 	echo.
 	echo Buildpe failed and terminated for some reason. If you'd like to
 	echo look further into what might have failed, back up the folder
@@ -652,7 +732,14 @@ rem
 	exit /b
 
 :end
+	rem
+	rem Final message befor exiting
+	rem
 	endlocal
+	echo.
+	echo This copy of SteadierState has been updated to work with
+	echo Windows 7, 8, 8.1 & 10. The source can be found at
+	echo https://github.com/7heMC/SteadierState
 	echo.
 	echo Exiting...
 	echo.
