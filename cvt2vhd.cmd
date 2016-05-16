@@ -37,7 +37,7 @@
 	echo -- Mark Minasi help@minasi.com www.steadierstate.com
 	echo.
 	echo This copy of SteadierState has been updated to work with
-	echo Windows 7, 8, 8.1 & 10. The source can be found at
+	echo Windows 7, 8, 8.1 and 10. The source can be found at
 	echo https://github.com/7heMC/SteadierState
 	pause
 
@@ -233,8 +233,8 @@
 	echo.
 	type makevhd.txt
 	diskpart /s makevhd.txt
-	set makevhdrc=%errorlevel%
-	if %makevhdrc%==0 (
+	set _makevhdrc=%errorlevel%
+	if %_makevhdrc%==0 (
 		echo.
 		echo Diskpart created and attached image.vhd
 		goto :fillvhd
@@ -242,7 +242,7 @@
 	echo.
 	echo =========== ERROR: Diskpart make vhd attempt failed ===========
 	echo.
-	echo Diskpart failed with error code=%makevhdrc%.
+	echo Diskpart failed with error code=%_makevhdrc%.
 	goto :badend
 
 :fillvhd
@@ -279,8 +279,8 @@
 	type detachvhd.txt
 	diskpart /s detachvhd.txt
 	echo.
-	set detachvhdrc=%errorlevel%
-	if %detachvhdrc%==0 (
+	set _detachvhdrc=%errorlevel%
+	if %_detachvhdrc%==0 (
 		echo.
 		echo Diskpart detached image.vhd.
 		goto :goodend
@@ -288,7 +288,7 @@
 	echo.
 	echo =========== ERROR: Diskpart make vhd attempt failed ===========
 	echo.
-	echo Diskpart failed with error code=%detachvhdrc%.
+	echo Diskpart failed with error code=%_detachvhdrc%.
 	goto :badend
 
 :goodend
@@ -341,12 +341,12 @@
 	
 :end
 	rem
-	rem Final message befor exiting
+	rem Final message before exiting
 	rem
 	endlocal
 	echo.
 	echo This copy of SteadierState has been updated to work with
-	echo Windows 7, 8, 8.1 & 10. The source can be found at
+	echo Windows 7, 8, 8.1 and 10. The source can be found at
 	echo https://github.com/7heMC/SteadierState
 	echo.
 	echo Exiting...

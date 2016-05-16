@@ -165,8 +165,7 @@
 
 :badend
 	rem
-	rem After rollback.cmd is complete, delete noauto.txt file so that it will 
-	rem autoroll next time
+	rem Set badend rollbackrc
 	rem
 	endlocal
 	set _rollbackrc=99
@@ -174,8 +173,7 @@
 
 :goodend
 	rem
-	rem After rollback.cmd is complete, delete noauto.txt file so that it will 
-	rem autoroll next time
+	rem Set goodend rollbackrc
 	rem
 	endlocal
 	set _rollbackrc=0
@@ -183,11 +181,11 @@
 
 :end
 	rem
-	rem Final message befor exiting rollback
+	rem Final message before exiting rollback.cmd
 	rem
 	echo.
 	echo This copy of SteadierState has been updated to work with
-	echo Windows 7, 8, 8.1 & 10. The source can be found at
+	echo Windows 7, 8, 8.1 and 10. The source can be found at
 	echo https://github.com/7heMC/SteadierState
 	echo.
 	echo Exiting...

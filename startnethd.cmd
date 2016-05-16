@@ -400,17 +400,17 @@ wpeinit
 	echo.
 	echo Something went wrong and we were not able to prepare this
 	echo computer for Steadier State. In its current state the computer
-	echo may unbootable. You should check the logs and see what went
+	echo may be unbootable. You should check the logs and see what went
 	echo and try again.
 
 :end
 	rem
-	rem Final message befor exiting
+	rem Final message before exiting
 	rem
 	endlocal
 	echo.
 	echo This copy of SteadierState has been updated to work with
-	echo Windows 7, 8, 8.1 & 10. The source can be found at
+	echo Windows 7, 8, 8.1 and 10. The source can be found at
 	echo https://github.com/7heMC/SteadierState
 	echo.
 	echo Exiting...

@@ -21,9 +21,8 @@
 		if %%b==Physical_Dr (
 			echo.
 			echo The Physical Drive Partition has not yet been assigned a drive
-			echo letter. We will find one that's available and assign it.
-			set _phynum=%%a
-			goto :findphydrive
+			echo letter. No further action is required.
+			goto :goodend
 		)
 		if %%c==Physical_Dr (
 			echo.
@@ -72,8 +71,8 @@
 	echo rescan >>%_actdrive%\mountphy.txt
 	echo exit >>%_actdrive%\mountphy.txt
 	diskpart /s %_actdrive%\mountphy.txt
-	set mountphyrc=%errorlevel%
-	if %mountphyrc%==0 (
+	set _mountphyrc=%errorlevel%
+	if %_mountphyrc%==0 (
 		echo Diskpart successfully mounted the Physical Drive Partition.
 		echo using %_phydrive%:
 		set _phydrive=%_phydrive%:
@@ -82,7 +81,7 @@
 	)
 	echo.
 	echo Diskpart failed to mount the UEFI System Partition, return code
-	echo %mountphyrc%. It's not really safe to continue so I'm stopping
+	echo %_mountphyrc%. It's not really safe to continue so I'm stopping
 	echo here.  Look at what Diskpart just reported to see if there's a
 	echo clue in there.  You may also get a clue from the diskpart
 	echo script: %_actdrive%\mountphy.txt.
@@ -147,11 +146,11 @@
 
 :end
 	rem
-	rem Final message befor exiting
+	rem Final message before exiting
 	rem
 	echo.
 	echo This copy of SteadierState has been updated to work with
-	echo Windows 7, 8, 8.1 & 10. The source can be found at
+	echo Windows 7, 8, 8.1 and 10. The source can be found at
 	echo https://github.com/7heMC/SteadierState
 	echo.
 	echo Exiting...

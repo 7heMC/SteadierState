@@ -52,21 +52,23 @@
 	rem Use wpeutil and reg to find out if PE was booted using bios/uefi
 	rem
 	wpeutil UpdateBootInfo
-	for /f "tokens=2* delims=    " %%a in ('reg query HKLM\System\CurrentControlSet\Control /v PEFirmwareType') DO set _firmware=%%b
-	if %_firmware%==0x1 (
+	for /f "tokens=3" %%a in ('reg query HKLM\System\CurrentControlSet\Control /v PEFirmwareType') do (set _firmware=%%a)
+	if '%_firmware%'=='' (
+		echo.
+		echo Unable to determine if the system was booted using BIOS or
+		echo UEFI. It is not safe to continue.
+		goto :badend
+	)
+	if '%_firmware%'=='0x1' (
 		echo The PC is booted in BIOS mode.
 		set _firmware=bios
 		set _winload=\windows\system32\boot\winload.exe
 	)
-	if %_firmware%==0x2 (
+	if '%_firmware%'=='0x2' (
 		echo The PC is booted in UEFI mode.
 		set _firmware=uefi
 		set _winload=\windows\system32\boot\winload.efi
 	)
-	echo.
-	echo Unable to determine if the system was booted using BIOS or
-	echo UEFI. It is not safe to continue.
-	goto :badend
 
 :extdrivequestion
 	rem
@@ -455,7 +457,7 @@
 	if %_copyvhdrc%==1 (
 		echo.
 		echo VHD file successfully transferred to %_phydrive%\image.vhd
-		goto :listvolume
+		goto :attachvhd
 	)
 	echo.
 	echo ERROR: Robocopy failed with return code %copyvhdrc%. Can't
@@ -645,6 +647,7 @@
 	mkdir %_vhddrive%\srs
 	copy %_actdrive%\srs\bcddefault.cmd %_vhddrive%\srs /y
 	copy %_actdrive%\srs\firstrun.cmd %_vhddrive%\srs /y
+	copy %_actdrive%\srs\listvolume.txt %_vhddrive%\srs\listvolume.txt
 	goto :goodend
 
 :notwinpe
@@ -701,12 +704,12 @@
 
 :end
 	rem
-	rem Final message befor exiting
+	rem Final message before exiting
 	rem
 	endlocal
 	echo.
 	echo This copy of SteadierState has been updated to work with
-	echo Windows 7, 8, 8.1 & 10. The source can be found at
+	echo Windows 7, 8, 8.1 and 10. The source can be found at
 	echo https://github.com/7heMC/SteadierState
 	echo.
 	echo Exiting...

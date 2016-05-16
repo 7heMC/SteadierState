@@ -730,7 +730,7 @@
 
 :end
 	rem
-	rem Final message befor exiting
+	rem Final message before exiting
 	rem
 	endlocal
 	echo.
