@@ -378,7 +378,6 @@
 	echo create partition primary  >>%_actdrive%\makephy.txt
 	echo format quick fs=ntfs label="Physical_Drive" >>%_actdrive%\makephy.txt
 	echo assign letter=%_phydrive% >>%_actdrive%\makephy.txt
-	if %_firmware%==uefi echo gpt attributes=0x8000000000000001 >>%_actdrive%\makephy.txt
 	echo rescan >>%_actdrive%\makephy.txt
 	echo exit >>%_actdrive%\makephy.txt
 	diskpart /s %_actdrive%\makephy.txt
