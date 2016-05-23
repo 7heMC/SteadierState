@@ -389,7 +389,7 @@
 		echo.
 		echo All diskpart phases completed successfuly!!
 		set _phydrive=%_phydrive%:
-		goto :findvhddrive
+		goto :applywim
 	)
 	echo.
 	echo Diskpart failed to create the Physical Disk Partition, return
