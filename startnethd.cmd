@@ -63,7 +63,7 @@ wpeinit
 			goto :findphydrive
 		)
 		if %%c==Physical_Dr (
-			set _phydrive=%%b
+			set _phydrive=%%b:
 			echo.
 			echo The Physical Drive Partition was automatically assigned a drive
 			echo letter and is using %%b:
@@ -140,6 +140,7 @@ wpeinit
 			echo The SYSTEM_UEFI Partition has not yet been assigned a drive
 			echo letter. We will find one that's available and assign it.
 			goto :findefidrive
+		)
 	)
 	set _efinumrc=%errorlevel%
 	if '%_efinum%'=='' (
@@ -251,7 +252,7 @@ wpeinit
 	rem
 	if %_automerge%==true goto :automerge
 	rem
-	rem Otherwise, we're just invoking WinPE.
+	rem Otherwise, we're asking for user input
 	rem
 	goto :showshell
 

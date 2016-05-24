@@ -61,6 +61,32 @@
 	diskpart /s makesnapshot.txt 
 	del makesnapshot.txt
 
+:bcdcheck
+	rem
+	rem What I'm about to do is to take the output of the "bcdedit"
+	rem command looking for the string "snapshot.vhd."  If I find it,
+	rem I'm assuming that we already have a boot-from-VHD entry in the
+	rem BCD that tries to boot from [%_phydrive%]\snapshot.vhd, and in
+	rem that case, we simply set it as the default.
+	rem
+	echo.
+	echo Setting the snapshot.vhd BCD entry as default
+	for /f "delims=" %%a in ('bcdedit %_bcdstore% /enum /v') do (
+		for /f "tokens=1,2" %%b in ('echo %%a') do (
+			if %%b==identifier (
+				set _guid=%%c
+				bcdedit %_bcdstore% /enum !_guid! /v | find /c "snapshot.vhd" >%_actdrive%\temp.txt
+				set _total=
+				set /p _total= <%_actdrive%\temp.txt
+				del %_actdrive%\temp.txt 2>nul
+				if not !_total!==0 (
+					bcdedit %_bcdstore% /default !_guid!
+					goto :goodend
+				)
+			)
+		)
+	)
+
 :goodend
 	rem
 	rem Success

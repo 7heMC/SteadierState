@@ -91,8 +91,8 @@
 	rem command looking for the string "snapshot.vhd."  If I find it,
 	rem I'm assuming that we already have a boot-from-VHD entry in the
 	rem BCD that tries to boot from [%_phydrive%]\snapshot.vhd, and in
-	rem that case, we do nothing.  Otherwise, we build a new OS entry
-	rem that boots from the snapshot.
+	rem that case, we simply set it as the default.  Otherwise, we build
+	rem a new OS entry that boots from the snapshot.
 	rem
 	echo.
 	echo Looking to see if a new BCD entry is necessary...
@@ -148,7 +148,7 @@
 		echo on
 		bcdedit %_bcdstore% /set !_guid! device vhd=[%_phydrive%]\snapshot.vhd
 		bcdedit %_bcdstore% /set !_guid! osdevice vhd=[%_phydrive%]\snapshot.vhd
-		bcdedit %_bcdstore% /set !_guid! path path %_winload%
+		bcdedit %_bcdstore% /set !_guid! path %_winload%
 		bcdedit %_bcdstore% /set !_guid! inherit {bootloadersettings}
 		bcdedit %_bcdstore% /set !_guid! recoveryenabled no
 		bcdedit %_bcdstore% /set !_guid! systemroot \windows	
