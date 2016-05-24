@@ -60,11 +60,10 @@
 	rem Perform a few checks and variable assignments for use later
 	rem
 	setlocal
-	cls
 	if %processor_architecture%==AMD64 (
 		set _arch=amd64
 		set _len=64
-		set "_adkbase=%programfiles(x86^)%\Windows Kits\10\Assessment and Deployment Kit"
+		set "_adkbase=%programfiles(x86)%\Windows Kits\10\Assessment and Deployment Kit"
 	) else (
 		set _arch=x86
 		set _len=32
@@ -112,7 +111,7 @@
 	rem
 	if exist "%_adkbase%" (
 		echo.
-		echo Found Windows adk at %_adkbase%
+		echo Found Windows adk at "%_adkbase%"
 		goto :filessearch
 	) else (
 		if %_adkcheckcount%==0 (
