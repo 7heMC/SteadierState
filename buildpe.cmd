@@ -73,6 +73,38 @@
 	set _logdir=%systemroot%\logs\buildpelogs
 	set _buildpepath=%temp%\BuildPE
 	set _adkcheckcount=0
+	if not exist %systemdrive%\srs mkdir %systemdrive%\srs
+	
+:admincheck	
+	rem
+	rem Check that we're running as an admin
+	rem
+	if exist %temp%\temp.txt del %temp%\temp.txt
+	whoami /groups |find /c "High Mandatory">%temp%\temp.txt
+	set _admin=
+	set /p _admin= <%temp%\temp.txt
+	del %temp%\temp.txt
+	if %_admin%==1 goto :logdir
+	echo.
+	echo I'm sorry, but you must be running from an elevated 
+	echo command prompt to run this command file.  Start a new 
+	echo command prompt by right-clicking the Command Prompt icon, and
+	echo then choose "Run as administrator" and click "yes" if you see
+	echo a UAC prompt.
+	goto :badend
+
+:logdir
+	rem
+	rem Set up and test logging
+	rem
+	rd %_logdir% /q /s  2>nul
+	md %_logdir%\test
+	if exist %_logdir%\test (
+		rd %_logdir%\test /q /s
+		goto :adkcheck
+	)
+	echo.
+	echo I can't seem to delete the old logs; continuing anyway.
 	
 :adkcheck
 	rem
@@ -81,7 +113,7 @@
 	if exist "%_adkbase%" (
 		echo.
 		echo Found Windows adk at %_adkbase%
-		goto :admincheck
+		goto :filessearch
 	) else (
 		if %_adkcheckcount%==0 (
 			call :adkmissing
@@ -114,8 +146,8 @@
 	echo You have chosen to install the Windows 10 ADK. I will now download
 	echo it using bitsadmin and install it to the default location.
 	set _adkcheckcount=1
-	bitsadmin /transfer adksetup /priority normal http://go.microsoft.com/fwlink/p/?LinkId=526740 %temp%\adksetup.exe
-	start %temp%\adksetup.exe /features OptionId.DeploymentTools OptionId.WindowsPreinstallationEnvironment /ceip off /q
+	bitsadmin /transfer adksetup /priority normal http://go.microsoft.com/fwlink/p/?LinkId=526740 %systemdrive%\srs\adksetup.exe
+	start %systemdrive%\srs\adksetup.exe /features OptionId.DeploymentTools OptionId.WindowsPreinstallationEnvironment /ceip off /q
 	echo Please wait while the adk is installed. This can take a very
 	echo long time. We will check every 10 seconds to see when the install is
 	echo completed. The progress bar will continue until finished.
@@ -139,37 +171,6 @@
 	)
 	exit /b
 	
-:admincheck	
-	rem
-	rem Check that we're running as an admin
-	rem
-	if exist %temp%\temp.txt del %temp%\temp.txt
-	whoami /groups |find /c "High Mandatory">%temp%\temp.txt
-	set _admin=
-	set /p _admin= <%temp%\temp.txt
-	del %temp%\temp.txt
-	if %_admin%==1 goto :logdir
-	echo.
-	echo I'm sorry, but you must be running from an elevated 
-	echo command prompt to run this command file.  Start a new 
-	echo command prompt by right-clicking the Command Prompt icon, and
-	echo then choose "Run as administrator" and click "yes" if you see
-	echo a UAC prompt.
-	goto :badend
-
-:logdir
-	rem
-	rem Set up and test logging
-	rem
-	rd %_logdir% /q /s  2>nul
-	md %_logdir%\test
-	if exist %_logdir%\test (
-		rd %_logdir%\test /q /s
-		goto :filessearch
-	)
-	echo.
-	echo I can't seem to delete the old logs; continuing anyway.
-
 :filessearch
 	rem
 	rem Check to see if all of the Steadier State files are in the same
