@@ -29,17 +29,19 @@ wpeinit
 	rem Use wpeutil and reg to find out if PE was booted using bios/uefi
 	rem
 	wpeutil UpdateBootInfo
-	for /f "tokens=2* delims=    " %%a in ('reg query HKLM\System\CurrentControlSet\Control /v PEFirmwareType') DO set _firmware=%%b
+	for /f "tokens=1-3" %%a in ('reg query HKLM\System\CurrentControlSet\Control /v PEFirmwareType') DO set _firmware=%%c
 	if %_firmware%==0x1 (
 		echo The system was booted in BIOS mode.
 		set _firmware=bios
 		set _winload=\windows\system32\boot\winload.exe
 		set _bcdstore=
+		goto :findphynum
 	)
 	if %_firmware%==0x2 (
 		echo The system was booted in UEFI mode.
 		set _firmware=uefi
 		set _winload=\windows\system32\boot\winload.efi
+		goto :findphynum
 	)
 	echo.
 	echo Unable to determine if the system was booted using BIOS or
@@ -65,7 +67,8 @@ wpeinit
 			echo.
 			echo The Physical Drive Partition was automatically assigned a drive
 			echo letter and is using %%b:
-			goto :oscheck
+			if %_firmware%==bios goto :vhdcheck
+			if %_firmware%==uefi goto :findefinum
 		)
 	)
 	echo.
