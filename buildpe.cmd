@@ -64,7 +64,7 @@
 	if %processor_architecture%==AMD64 (
 		set _arch=amd64
 		set _len=64
-		set "_adkbase=%programfiles(x86)%\Windows Kits\10\Assessment and Deployment Kit"
+		set "_adkbase=%programfiles(x86^)%\Windows Kits\10\Assessment and Deployment Kit"
 	) else (
 		set _arch=x86
 		set _len=32
@@ -78,7 +78,7 @@
 	rem
 	rem Check to see if the Windows 10 ADK is installed
 	rem
-	if exist %_adkbase% (
+	if exist "%_adkbase%" (
 		echo.
 		echo Found Windows adk at %_adkbase%
 		goto :admincheck
