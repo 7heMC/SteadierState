@@ -112,6 +112,7 @@
 		echo.
 		echo Drive %_extdriveletter% does not seem to exist. Let's try again.
 		goto :extdrivequestion
+	)
 	if exist %_extdrive%\image.vhd (
 		echo.
 		echo %_extdrive%\image.vhd already exists. Please enter a
@@ -155,15 +156,19 @@
 	rem tmpdrive = temporary drive letter to use when creating and
 	rem attaching the VHD.
 	rem
-	for %%a in (d e f g h i j k l m n o p q r s t u v w y z) do (
-		if not exist %%a:\ (
-			set _vhddrive=%%a
-			goto :confirm
+	for %%a in (K L M N O P Q R S T U V W Y Z) do (
+		for /f "tokens=3" %%b in ('diskpart /s %_actdrive%\srs\listvolume.txt') do (
+			if not %%a==%%b (
+				if not exist %%a:\ (
+					set _vhddrive=%%a
+					goto :confirm
+				)
+			)
 		)
 	)
 	echo.
 	echo Error:  I need a drive letter for mounting the vhd but could
-	echo not find one in the following range C-W,Y,Z.  I can't do the
+	echo not find one in the following range K-W,Y,Z.  I can't do the
 	echo job without a free drive letter, so I've got to stop.
 	goto :badend
 
@@ -191,7 +196,10 @@
 	echo 	Drive/folder to store the image/VHD=%_extdrive%.
 	echo 	Maximum "image.vhd" size=%_vhdsize%GB.
 	echo Additionally, I will use drive %_vhddrive%: to mount the vhd.
-	
+	echo.
+	set /p _confirm=Type 'y' and Enter to continue. Anything else to cancel.
+	if not '%_confirm%'=='y' goto :end
+
 :capturewim
 	rem
 	rem Capture the wim from the hard drive
