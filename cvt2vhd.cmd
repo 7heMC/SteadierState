@@ -101,17 +101,17 @@
 	echo colon. If you would like to store it in a directory please
 	echo enter the path. For example, E:\images
 	set /p _extdrive=What is your response?
+	set _extdriveletter=%_extdrive:~0,2%
 	if '%_extdrive%'=='end' goto :end
 	if '%_extdrive%'=='' (
 		echo.
 		echo You did not supply an answer. Let's try again.
 		goto :extdrivequestion
 	)
-	if not exist %_extdrive%\ (
+	if not exist %_extdriveletter%\ (
 		echo.
-		echo Drive %_extdrive% does not seem to exist. Let's try again.
+		echo Drive %_extdriveletter% does not seem to exist. Let's try again.
 		goto :extdrivequestion
-	)
 	if exist %_extdrive%\image.vhd (
 		echo.
 		echo %_extdrive%\image.vhd already exists. Please enter a
@@ -156,7 +156,7 @@
 	rem attaching the VHD.
 	rem
 	for %%a in (d e f g h i j k l m n o p q r s t u v w y z) do (
-		if not exist %%a:\ 
+		if not exist %%a:\ (
 			set _vhddrive=%%a
 			goto :confirm
 		)
