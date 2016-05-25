@@ -47,7 +47,8 @@
 	rem Use the pseudo-variable ~d0 to get the job done
 	rem _actdrive = this currently active drive
 	rem
-	setlocal
+	setlocal enabledelayedexpansion
+	set "_strletters=C D E F G H I J K L M N O P Q R S T U V W Y Z"
 	set _actdrive=%~d0
 	if not '%_actdrive%'=='X:' goto :notwinpe
 	%_actdrive%
@@ -156,19 +157,21 @@
 	rem tmpdrive = temporary drive letter to use when creating and
 	rem attaching the VHD.
 	rem
-	for %%a in (K L M N O P Q R S T U V W Y Z) do (
-		for /f "tokens=3" %%b in ('diskpart /s %_actdrive%\srs\listvolume.txt') do (
-			if not %%a==%%b (
-				if not exist %%a:\ (
-					set _vhddrive=%%a
-					goto :confirm
-				)
-			)
+	for /f "tokens=3" %%a in ('diskpart /s %_actdrive%\srs\listvolume.txt') do (
+		set _volletter=%%a
+		set _volletter=!_volletter:~0,1!
+		call set _strletters=%%_strletters:!_volletter! =%%
+		)
+	)
+	for %%a in (%_strletters%) do (
+		if not exist %%a:\ (
+			set _vhddrive=%%a
+			goto :confirm
 		)
 	)
 	echo.
 	echo Error:  I need a drive letter for mounting the vhd but could
-	echo not find one in the following range K-W,Y,Z.  I can't do the
+	echo not find one in the following range C-W,Y,Z.  I can't do the
 	echo job without a free drive letter, so I've got to stop.
 	goto :badend
 

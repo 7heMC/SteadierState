@@ -36,6 +36,7 @@
 	rem _actdrive = the currently active drive
 	rem
 	setlocal enabledelayedexpansion
+	set "_strletters=C D E F G H I J K L M N O P Q R S T U V W Y Z"
 	set _actdrive=%~d0
 	if not '%_actdrive%'=='X:' goto :notwinpe
 	%_actdrive%
@@ -218,7 +219,13 @@
 	echo.
 	echo Finding a drive letter to use for the Steadier State (SrS)
 	echo Tools Partition
-	for %%a in (d e f g h i j k l m n o p q r s t u v w y z) do (
+	for /f "tokens=3" %%a in ('diskpart /s %_actdrive%\srs\listvolume.txt') do (
+		set _volletter=%%a
+		set _volletter=!_volletter:~0,1!
+		call set _strletters=%%_strletters:!_volletter! =%%
+		)
+	)
+	for %%a in (%_strletters%) do (
 		if not exist %%a:\ (
 			echo.
 			echo Found %%a: as an available drive letter for the SRS
@@ -278,7 +285,13 @@
 	rem
 	echo.
 	echo Finding a drive letter to use for the UEFI Partition
-	for %%a in (d e f g h i j k l m n o p q r s t u v w y z) do (
+	for /f "tokens=3" %%a in ('diskpart /s %_actdrive%\srs\listvolume.txt') do (
+		set _volletter=%%a
+		set _volletter=!_volletter:~0,1!
+		call set _strletters=%%_strletters:!_volletter! =%%
+		)
+	)
+	for %%a in (%_strletters%) do (
 		if not exist %%a:\ (
 			echo.
 			echo Found %%a: as an available drive letter for the UEFI
@@ -353,7 +366,13 @@
 	rem
 	echo.
 	echo Finding a drive letter to use for the Physical Drive Partition
-	for %%a in (d e f g h i j k l m n o p q r s t u v w y z) do (
+	for /f "tokens=3" %%a in ('diskpart /s %_actdrive%\srs\listvolume.txt') do (
+		set _volletter=%%a
+		set _volletter=!_volletter:~0,1!
+		call set _strletters=%%_strletters:!_volletter! =%%
+		)
+	)
+	for %%a in (%_strletters%) do (
 		if not exist %%a:\ (
 			echo.
 			echo Found %%a: as an available drive letter for the
@@ -430,7 +449,13 @@
 	rem
 	echo.
 	echo Finding a drive letter to use for the Physical Drive Partition
-	for %%a in (d e f g h i j k l m n o p q r s t u v w y z) do (
+	for /f "tokens=3" %%a in ('diskpart /s %_actdrive%\srs\listvolume.txt') do (
+		set _volletter=%%a
+		set _volletter=!_volletter:~0,1!
+		call set _strletters=%%_strletters:!_volletter! =%%
+		)
+	)
+	for %%a in (%_strletters%) do (
 		if not exist %%a:\ (
 			echo.
 			echo Found %%a: as an available drive letter for the vhd.

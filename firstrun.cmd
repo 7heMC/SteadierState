@@ -1,5 +1,9 @@
 @echo off
 
+:setup
+	setlocal enabledelayedexpansion
+	set "_strletters=C D E F G H I J K L M N O P Q R S T U V W Y Z"
+
 :bcdtask
 	rem
 	rem Create the task to change boot order and run the command
@@ -45,7 +49,13 @@
 	echo.
 	echo Looking for an available drive letter to use for the Physical
 	echo Drive Partition
-	for %%a in (d e f g h i j k l m n o p q r s t u v w y z) do (
+	for /f "tokens=3" %%a in ('diskpart /s %_actdrive%\srs\listvolume.txt') do (
+		set _volletter=%%a
+		set _volletter=!_volletter:~0,1!
+		call set _strletters=%%_strletters:!_volletter! =%%
+		)
+	)
+	for %%a in (%_strletters%) do (
 		if not exist %%a:\ (
 			echo.
 			echo Found %%a: as an available drive letter for the Physical
