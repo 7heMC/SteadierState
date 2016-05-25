@@ -115,7 +115,7 @@
 		goto :filessearch
 	) else (
 		if %_adkcheckcount%==0 (
-			call :adkmissing
+			goto :adkmissing
 		) else (
 			echo.
 			echo We tried to install Windows ADK, but something went wrong.
@@ -159,7 +159,7 @@
 	rem installing
 	rem
 	if exist %temp%\temp.txt del %temp%\temp.txt
-	tasklist /nh |find /c "adksetup.exe">%temp%\temp.txt
+	tasklist /nh |find /c "adksetup.exe" >%temp%\temp.txt
 	set _adksetupactive=
 	set /p _adksetupactive= <%temp%\temp.txt
 	if not %_adksetupactive%==0 (
