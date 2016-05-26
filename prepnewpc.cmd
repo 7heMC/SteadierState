@@ -70,6 +70,10 @@
 		set _firmware=uefi
 		set _winload=\windows\system32\boot\winload.efi
 	)
+	echo.
+	echo Unable to determine if the system was booted using BIOS or
+	echo UEFI. It is not safe to continue.
+	goto :badend
 
 :extdrivequestion
 	rem
