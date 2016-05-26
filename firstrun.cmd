@@ -21,7 +21,7 @@
 	rem
 	echo.
 	echo Looking for the Physical Drive Partition
-	for /f "tokens=2-4" %%a in ('diskpart /s %_actdrive%\srs\listvolume.txt') do (
+	for /f "tokens=2-4" %%a in ('diskpart /s %systemdrive%\srs\listvolume.txt') do (
 		if %%b==Physical_Dr (
 			echo.
 			echo The Physical Drive Partition has not yet been assigned a drive
@@ -42,61 +42,6 @@
 	echo don't care about hiding the Physical Drive.
 	goto :badend
 
-:findphydrive
-	rem
-	rem Find an available drive letter for the Physical Drive
-	rem
-	echo.
-	echo Looking for an available drive letter to use for the Physical
-	echo Drive Partition
-	for /f "tokens=3" %%a in ('diskpart /s %_actdrive%\srs\listvolume.txt') do (
-		set _volletter=%%a
-		set _volletter=!_volletter:~0,1!
-		call set _strletters=%%_strletters:!_volletter! =%%
-		)
-	)
-	for %%a in (%_strletters%) do (
-		if not exist %%a:\ (
-			echo.
-			echo Found %%a: as an available drive letter for the Physical
-			echo Drive Partition.
-			set _phydrive=%%a
-			goto :phymount
-		)
-	)
-	echo.
-	echo Error:  I need a drive letter for the Physical Drive Partition,
-	echo but could not find one in the following range D-W,Y,Z. I can't
-	echo do the job without a free drive letter, so I've got to stop.
-	goto :badend
-
-:phymount
-	rem
-	rem Mount the Physical Drive Partition
-	rem
-	echo.
-	echo Mounting the Physical Drive Partition
-	echo select volume %_phynum% >%_actdrive%\mountphy.txt
-	echo assign letter=%_phydrive% >>%_actdrive%\mountphy.txt
-	echo rescan >>%_actdrive%\mountphy.txt
-	echo exit >>%_actdrive%\mountphy.txt
-	diskpart /s %_actdrive%\mountphy.txt
-	set _mountphyrc=%errorlevel%
-	if %_mountphyrc%==0 (
-		echo Diskpart successfully mounted the Physical Drive Partition.
-		echo using %_phydrive%:
-		set _phydrive=%_phydrive%:
-		del %_actdrive%\mountphy.txt
-		goto :registryfix
-	)
-	echo.
-	echo Diskpart failed to mount the UEFI System Partition, return code
-	echo %_mountphyrc%. It's not really safe to continue so I'm stopping
-	echo here.  Look at what Diskpart just reported to see if there's a
-	echo clue in there.  You may also get a clue from the diskpart
-	echo script: %_actdrive%\mountphy.txt.
-	goto :badend
-	
 :registryfix
 	rem
 	rem Set the value for the NoDrives registry key
