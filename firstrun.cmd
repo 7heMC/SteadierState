@@ -1,8 +1,7 @@
 @echo off
 
 :setup
-	setlocal enabledelayedexpansion
-	set "_strletters=C D E F G H I J K L M N O P Q R S T U V W Y Z"
+	setlocal
 
 :bcdtask
 	rem
@@ -103,6 +102,7 @@
 	rem
 	rem Final message before exiting
 	rem
+	endlocal
 	echo.
 	echo This copy of SteadierState has been updated to work with
 	echo Windows 7, 8, 8.1 and 10. The source can be found at
