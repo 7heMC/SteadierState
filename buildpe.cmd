@@ -297,7 +297,7 @@
 	if '%_usbdrive%'=='end' goto :end
 	if '%_usbdrive%'=='' (
 		echo.
-		echo "You did not enter anything. Asking again about USB.
+		echo "You did not enter anything. Asking again about USB."
 		goto :usbquestion
 	)
 	rem
