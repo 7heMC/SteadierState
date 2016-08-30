@@ -430,7 +430,7 @@
 	echo installing it) AND -- bonus! -- serves as a "maintenance" copy
 	echo of Windows that's very useful for resolving various boot and
 	echo storage problems.
-	Dism /Apply-Image /ImageFile:%_usbdrive%\sources\boot.wim /ApplyDir:%_srsdrive% /ScratchDir:%_extdrive%\scratch /Index:1 /CheckIntegrity /Verify
+	Dism /ScratchDir:%_extdrive%\scratch /Apply-Image /ImageFile:%_usbdrive%\sources\boot.wim /ApplyDir:%_srsdrive% /Index:1 /CheckIntegrity /Verify
 	set _applyrc=%errorlevel%
 	if %_applyrc%==0 (
 		echo.
