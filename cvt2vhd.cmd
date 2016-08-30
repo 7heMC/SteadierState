@@ -210,8 +210,8 @@
 	echo.
 	echo Capturing the wim, which will be used to fill the vhd.
 	echo Imaging %_imgdrive% to %_extdrive%, command is: 
-	echo Dism /Capture-Image /ImageFile:%_extdrive%\image.wim /CaptureDir:%_imgdrive%  /ScratchDir:%_extdrive%\scratch /Name:"Intermediate image"  /Verify
-	Dism /Capture-Image /ImageFile:%_extdrive%\image.wim /CaptureDir:%_imgdrive%  /ScratchDir:%_extdrive%\scratch /Name:"Intermediate image"  /Verify
+	echo Dism /ScratchDir:%_extdrive%\scratch /Capture-Image /ImageFile:%_extdrive%\image.wim /CaptureDir:%_imgdrive%\ /Name:"Intermediate image" /Verify
+	Dism /ScratchDir:%_extdrive%\scratch /Capture-Image /ImageFile:%_extdrive%\image.wim /CaptureDir:%_imgdrive%\ /Name:"Intermediate image" /Verify
 	set _capturerc=%errorlevel%
 	if %_capturerc%==0 (
 		echo.
@@ -262,8 +262,8 @@
 	rem
 	echo.
 	echo Filling vhd with image.wim, we'll run this command:
-	echo Dism /Apply-Image /ImageFile:%_extdrive%\image.wim /ApplyDir:%_vhddrive% /ScratchDir:%_extdrive%\scratch /Index:1 /Verify
-	Dism /Apply-Image /ImageFile:%_extdrive%\image.wim /ApplyDir:%_vhddrive% /ScratchDir:%_extdrive%\scratch /Index:1 /Verify
+	echo Dism /ScratchDir:%_extdrive%\scratch /Apply-Image /ImageFile:%_extdrive%\image.wim /ApplyDir:%_vhddrive%\ /Index:1 /Verify
+	Dism /ScratchDir:%_extdrive%\scratch /Apply-Image /ImageFile:%_extdrive%\image.wim /ApplyDir:%_vhddrive%\ /Index:1 /Verify
 	set _applyrc=%errorlevel%
 	if %_applyrc%==0 (
 		echo.
