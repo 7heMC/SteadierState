@@ -17,7 +17,10 @@
 				set total=
 				set /p total= <%systemdrive%\srs\temp.txt
 				del %systemdrive%\srs\temp.txt 2>nul
-				if not !total!==0 bcdedit /default !guid!
+				if not !total!==0 (
+					bcdedit /default !guid!
+					bcdedit !guid! /timeout 1 
+				)
 			)
 		)
 	)
