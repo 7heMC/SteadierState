@@ -230,7 +230,6 @@ wpeinit
 	rem Check if automerge.txt and/or noauto.txt exist
 	rem
 	set _automerge=false
-	if exist %_phydrive%\automerge.txt set _automerge=true
 	set _noauto=false
 	for /f "tokens=3" %%a in ('diskpart /s %_actdrive%\srs\listvolume.txt') do (
 		set _volletter=%%a
@@ -239,15 +238,21 @@ wpeinit
 		)
 	)
 	for %%a in (%_strletters%) do (
+		if exist %%a:\automerge.txt (
+			set _automerge=true
+			set _amfile=%%a:\automerge.txt
+		)
+		if exist %%a:\srs\automerge.txt (
+			set _automerge=true
+			set _amfile=%%a:\automerge.txt
+		)
 		if exist %%a:\noauto.txt (
 			set _noauto=true
 			set _noafile=%%a:\noauto.txt
-			goto :logic
 		)
 		if exist %%a:\srs\noauto.txt (
 			set _noauto=true
 			set _noafile=%%a:\srs\noauto.txt
-			goto :logic
 		)
 	)
 
@@ -328,7 +333,7 @@ wpeinit
 	echo.
 	echo Automatically merging snapshot.vhd and image.vhd
 	echo System will reboot automatically when done!
-	del %_phydrive%\automerge.txt 2>nul
+	del %_amfile% 2>nul
 	call merge.cmd
 	if %_mergerc%==0 exit
 	goto :badend
