@@ -29,7 +29,6 @@
 	rem
 	echo.
 	echo Deleting unneeded files
-	if exist %_phydrive%\automerge.txt del %_phydrive%\automerge.txt
 	if exist mergesnaps.txt del mergesnaps.txt
 	
 :mergesnapshot
