@@ -232,12 +232,6 @@ wpeinit
 	set _automerge=false
 	set _noauto=false
 	for /f "tokens=3" %%a in ('diskpart /s %_actdrive%\srs\listvolume.txt') do (
-		set _volletter=%%a
-		set _volletter=!_volletter:~0,1!
-		call set _strletters=%%_strletters:!_volletter! =%%
-		)
-	)
-	for %%a in (%_strletters%) do (
 		if exist %%a:\automerge.txt (
 			set _automerge=true
 			set _amfile=%%a:\automerge.txt
