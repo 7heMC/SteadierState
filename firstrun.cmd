@@ -13,6 +13,18 @@
 	echo and create a new snapshot
 	schtasks /Create /RU "NT AUTHORITY\SYSTEM" /SC ONSTART /TN bcddefault /TR %systemdrive%\srs\bcddefault.cmd /F
 	call %systemdrive%\srs\bcddefault.cmd
+	
+:restarttasks
+	rem
+	rem Create a few tasks to reboot the computer every night
+	rem We found this necessary to maintain the computer's
+	rem relationship with the domain.
+	rem
+	echo.
+	echo Creating a few tasks to reboot the computer every night
+	schtasks /Create /RU "NT AUTHORITY\SYSTEM" /SC DAILY /TN nightlyrestart0 /TR %systemdrive%\srs\nightlyreset.cmd /ST 01:00 /F
+	schtasks /Create /RU "NT AUTHORITY\SYSTEM" /SC DAILY /TN nightlyrestart1 /TR %systemdrive%\srs\nightlymerge.cmd /ST 03:00 /F
+	schtasks /Create /RU "NT AUTHORITY\SYSTEM" /SC DAILY /TN nightlyrestart2 /TR %systemdrive%\srs\nightlymerge.cmd /ST 05:00 /F
 
 :findphynum
 	rem
