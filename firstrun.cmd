@@ -3,6 +3,33 @@
 :setup
 	setlocal
 
+:findphynum
+	rem
+	rem listvolume.txt is the name of the script to find the volumes
+	rem
+	echo.
+	echo Looking for the Physical Drive Partition
+	for /f "tokens=2-4" %%a in ('diskpart /s %systemdrive%\srs\listvolume.txt') do (
+		if %%b==Physical_Dr (
+			echo.
+			echo The Physical Drive Partition has not yet been assigned a drive
+			echo letter. No further action is required.
+			goto :goodend
+		)
+		if %%c==Physical_Dr (
+			echo.
+			echo The Physical Drive Partition was automatically assigned a drive
+			echo letter and is using %%b:
+			set _phydrive=%%b
+			goto :bcdtask
+		)
+	)
+	echo.
+	echo Can't find the Physical Drive or its drive letter.  I can't fix
+	echo this so I've got to exit. You can disregard this message if you
+	echo don't care about hiding the Physical Drive.
+	goto :badend
+	
 :bcdtask
 	rem
 	rem Create the task to change boot order and run the command
@@ -27,39 +54,13 @@
 	echo.
 	echo Creating nightlymerge.cmd
 	echo. > %systemdrive%\srs\automerge.txt
-	echo shutdown /r /t 0 > %systemdrive%\srs\nightlymerge.cmd
+	echo copy %systemdrive%\srs\automerge.txt %_phydrive%\ > %systemdrive%\srs\nightlymerge.cmd
+	echo shutdown /r /t 0 >> %systemdrive%\srs\nightlymerge.cmd
 	echo.
 	echo Creating a few tasks to reboot the computer every night
 	schtasks /Create /RU "NT AUTHORITY\SYSTEM" /SC DAILY /TN nightlyrestart0 /TR %systemdrive%\srs\nightlyreset.cmd /ST 01:00 /F
 	schtasks /Create /RU "NT AUTHORITY\SYSTEM" /SC DAILY /TN nightlyrestart1 /TR %systemdrive%\srs\nightlymerge.cmd /ST 03:00 /F
 	schtasks /Create /RU "NT AUTHORITY\SYSTEM" /SC DAILY /TN nightlyrestart2 /TR %systemdrive%\srs\nightlymerge.cmd /ST 05:00 /F
-
-:findphynum
-	rem
-	rem listvolume.txt is the name of the script to find the volumes
-	rem
-	echo.
-	echo Looking for the Physical Drive Partition
-	for /f "tokens=2-4" %%a in ('diskpart /s %systemdrive%\srs\listvolume.txt') do (
-		if %%b==Physical_Dr (
-			echo.
-			echo The Physical Drive Partition has not yet been assigned a drive
-			echo letter. No further action is required.
-			goto :goodend
-		)
-		if %%c==Physical_Dr (
-			echo.
-			echo The Physical Drive Partition was automatically assigned a drive
-			echo letter and is using %%b:
-			set _phydrive=%%b
-			goto :registryfix
-		)
-	)
-	echo.
-	echo Can't find the Physical Drive or its drive letter.  I can't fix
-	echo this so I've got to exit. You can disregard this message if you
-	echo don't care about hiding the Physical Drive.
-	goto :badend
 
 :registryfix
 	rem
