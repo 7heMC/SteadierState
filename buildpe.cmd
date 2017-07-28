@@ -214,7 +214,7 @@
 	echo We were unable to automatically locate the files. Where is the
 	echo folder with the Steadier State command files, i.e. the folder
 	echo containing bcddefault.cmd, cvt2vhd.cmd, firstrun.cmd,
-	echo listvolume.txt, merge.cmd, nodrives.reg, prepnewpc.cmd,
+	echo listvolume.txt, merge.cmd, prepnewpc.cmd,
 	echo rollback.cmd, startnethd.cmd. Please enter the folder name here
 	echo and press Enter; again, to stop this program just type 'end'
 	set /p _srspath=without quotes and press Enter to exit.
@@ -551,7 +551,6 @@
 	copy %_srspath%\firstrun.cmd %_buildpepath%\mount\srs /y >nul
 	copy %_srspath%\listvolume.txt %_buildpepath%\mount\srs /y >nul
 	copy %_srspath%\merge.cmd %_buildpepath%\mount\srs /y >nul
-	copy %_srspath%\nodrives.reg %_buildpepath%\mount\srs /y >nul
 	copy %_srspath%\prepnewpc.cmd %_buildpepath%\mount /y >nul
 	copy %_srspath%\rollback.cmd %_buildpepath%\mount\srs /y >nul
 	copy %_srspath%\startnethd.cmd %_buildpepath%\mount /y >nul
