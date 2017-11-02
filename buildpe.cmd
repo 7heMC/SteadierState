@@ -559,7 +559,9 @@
 	rem
 	echo @cd \ >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
 	echo @cls  >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
-	echo @echo WinPE 3.0 booted from USB stick. >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @ver ^> winpever.txt >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @echo WinPE now booted from USB stick. >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
+	echo @type winpever.txt >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
 	echo @echo. >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
 	echo @echo You may use the command prepnewpc to wipe this computer's >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
 	echo @echo hard disk, install WinPE and get it ready to deploy a new >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
