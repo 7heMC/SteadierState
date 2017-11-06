@@ -23,7 +23,7 @@
 	echo named prepnewpc.cmd
 	echo.
 	echo That'll take a while, but when it's done, the vhd file will be
-	echo moved from the external drive to your C: drive. Once you've got
+	echo copied from the external drive to your C: drive. Once you've got
 	echo that image.vhd on the C: drive you can boot a system to get it
 	echo ready to be able to use that VHD.  You can do it by simply
 	echo restarting your computer.
@@ -472,7 +472,7 @@
 
 :copyvhd
 	rem
-	rem Move the vhd on to the %_phydrive% drive
+	rem Copy the vhd on to the %_phydrive% drive
 	rem
 	echo.
 	echo Using Robocopy to copy the image.vhd file located in
@@ -486,7 +486,7 @@
 	)
 	echo.
 	echo ERROR: Robocopy failed with return code %copyvhdrc%. Can't
-	echo continue without moving the vhd. Please check the logs and try
+	echo continue without copying the vhd. Please check the logs and try
 	echo again.
 	goto :badend
 
