@@ -262,7 +262,7 @@ wpeinit
 	if %_noimage%==true goto :noimage
 	rem
 	rem If _nosnap=true, we have an image but no snapshot, so just set up that snapshot
-	rem and tell the user what we did.  (Advise her about noauto.txt as well.)
+	rem and tell the user what we did.  (Advise here about noauto.txt as well.)
 	rem
 	if %_nosnap%==true goto :nosnap
 	rem
