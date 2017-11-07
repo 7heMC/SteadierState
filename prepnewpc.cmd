@@ -101,7 +101,7 @@
 		goto :extdrivequestion
 	)
 	if not exist %_extdrive%\scratch mkdir %_extdrive%\scratch
-		
+
 :warnings
 	rem
 	rem Warn about data loss and give outline of the remaining steps
@@ -141,7 +141,7 @@
 	echo.
 	echo For this command file to work, you must run this from a WinPE-
 	echo equipped USB stick or DVD created with the BUILDPE.CMD command
-	echo file that accompanied this file. 
+	echo file that accompanied this file.
 	echo.
 	echo If you ARE sure that you want to wipe drive 0 clean and install
 	echo a WinPE-equipped Windows boot manager and partition then please
@@ -619,13 +619,13 @@
 	)
 	echo on
 	bcdedit %_bcdstore% /set %_guid% osdevice partition=%_srsdrive%
-	bcdedit %_bcdstore% /set %_guid% device partition=%_srsdrive% 
+	bcdedit %_bcdstore% /set %_guid% device partition=%_srsdrive%
 	bcdedit %_bcdstore% /set %_guid% path %_winload%
 	bcdedit %_bcdstore% /set %_guid% systemroot \windows
 	bcdedit %_bcdstore% /set %_guid% winpe yes
-	bcdedit %_bcdstore% /set %_guid% detecthal yes 
+	bcdedit %_bcdstore% /set %_guid% detecthal yes
 	bcdedit %_bcdstore% /displayorder %_guid% /addlast
-	bcdedit %_bcdstore% /timeout 1 
+	bcdedit %_bcdstore% /timeout 1
 	@echo off
 	for /f "delims=" %%a in ('bcdedit %_bcdstore% /enum /v') do (
 		for /f "tokens=1,2" %%b in ('echo %%a') do (
@@ -687,7 +687,7 @@
 	echo in the documentation, and run prepnewpc.cmd from that USB/DVD.
 	echo.
 	goto :end
-	
+
 :goodend
 	rem
 	rem Success
@@ -707,13 +707,13 @@
 	echo partition. The SRS tools partition will create your first
 	echo snapshot file AND reboot so that you can start using Windows
 	echo with Steadier State. (Don't worry when it does a little work
-	echo and then reboots.)  
+	echo and then reboots.)
 	echo.
 	echo If you plan to modify the image further before final
 	echo deployment, then take a look in the documentation about using
 	echo the "merge" command.
 	echo.
-	echo I hope you find this useful! 
+	echo I hope you find this useful!
 	echo -- Mark Minasi help@minasi.com www.steadierstate.com
 	goto :end
 
