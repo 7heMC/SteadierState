@@ -29,7 +29,7 @@
 	echo this so I've got to exit. You can disregard this message if you
 	echo don't care about hiding the Physical Drive.
 	goto :badend
-	
+
 :bcdtask
 	rem
 	rem Create the task to change boot order and run the command
@@ -40,7 +40,7 @@
 	echo and create a new snapshot
 	schtasks /Create /RU "NT AUTHORITY\SYSTEM" /SC ONSTART /TN bcddefault /TR %systemdrive%\srs\bcddefault.cmd /F
 	call %systemdrive%\srs\bcddefault.cmd
-	
+
 :restarttasks
 	rem
 	rem Create a few commands and tasks to reboot the computer
@@ -110,7 +110,7 @@
 	echo functioning version of Steadier State. Please reboot to allow
 	echo the changes to take effect.
 	goto :end
-	
+
 :badend
 	rem
 	rem Something failed
