@@ -175,7 +175,7 @@
 	rem Check to see if all of the Steadier State files are in the same
 	rem folder. Use the name of the this file to determine it's location
 	rem
-	set _cmdpath=%0
+	set _cmdpath=%~f0
 	set _cmdname=%~n0%~x0
 	call :strlen _cmdname _strlen
 	call set _srspath=%%_cmdpath:~0,-%_strlen%%%
