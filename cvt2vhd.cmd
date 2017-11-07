@@ -13,21 +13,21 @@
 	echo your Windows system, choose "Roll Back Windows," and at
 	echo that point every change you've made to the system is un-done.
 	echo To do that, however, Steadier State requires you to convert
-	echo your Windows system to a VHD file, and CVT2VHD does that 
+	echo your Windows system to a VHD file, and CVT2VHD does that
 	echo for you.
 	echo.
 	echo To get a system ready for conversion, first boot it from
 	echo your SteadierState bootable USB stick or CD.  Then, connect
-	echo the system to some large external drive, whether it's a 
+	echo the system to some large external drive, whether it's a
 	echo networked drive mapped to a drive letter or perhaps a large
 	echo external hard disk -- you'll need that because you're going
 	echo to take that system's C: drive and rebuild it as one large
 	echo VHD file.  On the USB stick/CD, you'll see a file named
-	echo cvt2vhd.cmd.  
+	echo cvt2vhd.cmd.
 	echo.
 	echo This'll take a while, but when it's done, you'll have a file
 	echo named image.vhd on your target drive. Once you've got the
-	echo image.vhd, you're ready to prep a system to get it ready to 
+	echo image.vhd, you're ready to prep a system to get it ready to
 	echo be able to use that VHD.  You can do that by booting the system
 	echo with your USB stick/CD and then running prepnewpc. Or if you
 	echo want to deploy it on this machine simply use run the prepnewpc
@@ -195,9 +195,9 @@
 	echo space to hold your Windows box's C: drive on it.
 	echo.
 	echo Confirming, you chose:
-	echo 	Drive to to convert to VHD=%_imgdrive%.
-	echo 	Drive/folder to store the image/VHD=%_extdrive%.
-	echo 	Maximum "image.vhd" size=%_vhdsize%GB.
+	echo	Drive to to convert to VHD=%_imgdrive%.
+	echo	Drive/folder to store the image/VHD=%_extdrive%.
+	echo	Maximum "image.vhd" size=%_vhdsize%GB.
 	echo Additionally, I will use drive %_vhddrive%: to mount the vhd.
 	echo.
 	set /p _confirm=Type 'y' and Enter to continue. Anything else to cancel.
@@ -209,7 +209,7 @@
 	rem
 	echo.
 	echo Capturing the wim, which will be used to fill the vhd.
-	echo Imaging %_imgdrive% to %_extdrive%, command is: 
+	echo Imaging %_imgdrive% to %_extdrive%, command is:
 	echo Dism /ScratchDir:%_extdrive%\scratch /Capture-Image /ImageFile:%_extdrive%\image.wim /CaptureDir:%_imgdrive%\ /Name:"Intermediate image" /Verify
 	Dism /ScratchDir:%_extdrive%\scratch /Capture-Image /ImageFile:%_extdrive%\image.wim /CaptureDir:%_imgdrive%\ /Name:"Intermediate image" /Verify
 	set _capturerc=%errorlevel%
@@ -320,7 +320,7 @@
 	echo     things and automatically reboots again.  Let it do its work and reboot and
 	echo     your system will soon boot up in Windows 7, but at that point you'll be
 	echo     protected by Steadier State -- whenever you want your system to forget
-	echo     everything done to it since now, just reboot and at Boot Manager, choose 
+	echo     everything done to it since now, just reboot and at Boot Manager, choose
 	echo     "Roll Back Windows."
 	echo.
 	echo Thanks for using Steadier State, I hope it's of value.
@@ -349,7 +349,7 @@
 	echo.
 	echo Please check the errors listed to see if it provides any help
 	echo in figuring out what happened.
-	
+
 :end
 	rem
 	rem Final message before exiting
