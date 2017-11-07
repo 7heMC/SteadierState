@@ -2,36 +2,36 @@
 
 :background
 	rem ====================================================================
-	rem 						BUILDPE.CMD
-	rem 
+	rem						BUILDPE.CMD
+	rem
 	rem Function: automates creating the USB stick or CD used to deploy
-	rem 	Steadier State to a system
+	rem	Steadier State to a system
 	rem End product:  an ISO folder and optionally puts it on a USB
-	rem 	stick.
+	rem	stick.
 	rem
 	rem Assumes:ADK installed in default location
-	rem 		Can create and delete a folder %temp%\SrS
+	rem		Can create and delete a folder %temp%\SrS
 	rem	Inputs:	Which version of OS to use, Win 7, 8, 10, etc.
-	rem    		Which architecture to use, 32 or 64 bit
+	rem		Which architecture to use, 32 or 64 bit
 	rem			Where to write the ISO for a CD if desired
 	rem			Drive letter of the USB stick to create if desired
 	rem
 	rem ADK LOCATION
-	rem 	Needs Windows ADK installed in its default location. If
-	rem 	that's an issue, change the "_adkbase" variable to point to the
+	rem	Needs Windows ADK installed in its default location. If
+	rem	that's an issue, change the "_adkbase" variable to point to the
 	rem		top level folder wherever the ADK is installed. This script was
 	rem		designed to use Windows 10 ADK, which can be installed and used
 	rem		on any Windows 7 or newer system. If it is not found, we will
 	rem		ask to install it. Previous versions are listed here as well,
 	rem		but are untested and should not be used with this script.
 	rem		Windows 7 WAIK:
-	rem 		http://www.microsoft.com/en-us/download/details.aspx?id=5753
+	rem		http://www.microsoft.com/en-us/download/details.aspx?id=5753
 	rem		Windows 8 ADK:
-	rem 		http://www.microsoft.com/en-us/download/details.aspx?id=30652
+	rem		http://www.microsoft.com/en-us/download/details.aspx?id=30652
 	rem		Windows 8.1 ADK:
-	rem 		http://www.microsoft.com/en-US/download/details.aspx?id=39982
+	rem		http://www.microsoft.com/en-US/download/details.aspx?id=39982
 	rem		Windows 10 ADK:
-	rem 		https://msdn.microsoft.com/en-us/windows/hardware/dn913721.aspx
+	rem		https://msdn.microsoft.com/en-us/windows/hardware/dn913721.aspx
 	rem
 	rem
 	rem Provide user with background information about buildpe.cmd
@@ -73,8 +73,8 @@
 	set _buildpepath=%temp%\BuildPE
 	set _adkcheckcount=0
 	if not exist %systemdrive%\srs mkdir %systemdrive%\srs
-	
-:admincheck	
+
+:admincheck
 	rem
 	rem Check that we're running as an admin
 	rem
@@ -85,8 +85,8 @@
 	del %temp%\temp.txt
 	if %_admin%==1 goto :logdir
 	echo.
-	echo I'm sorry, but you must be running from an elevated 
-	echo command prompt to run this command file.  Start a new 
+	echo I'm sorry, but you must be running from an elevated
+	echo command prompt to run this command file.  Start a new
 	echo command prompt by right-clicking the Command Prompt icon, and
 	echo then choose "Run as administrator" and click "yes" if you see
 	echo a UAC prompt.
@@ -104,7 +104,7 @@
 	)
 	echo.
 	echo I can't seem to delete the old logs; continuing anyway.
-	
+
 :adkcheck
 	rem
 	rem Check to see if the Windows 10 ADK is installed
@@ -123,7 +123,7 @@
 			goto :badend
 		)
 	)
-	
+
 :adkmissing
 	rem
 	rem The Windows 10 ADK was not found; ask user how to proceed
@@ -169,7 +169,7 @@
 		goto :adkwait
 	)
 	exit /b
-	
+
 :filessearch
 	rem
 	rem Check to see if all of the Steadier State files are in the same
@@ -185,23 +185,23 @@
 	rem
 	rem Subroutine to find the length of a string
 	rem
-	(   
+	(
 		setlocal enabledelayedexpansion
 		set "_string=!%~1!#"
 		set "_strlen=0"
 		for %%a in (4096 2048 1024 512 256 128 64 32 16 8 4 2 1) do (
-			if "!_string:~%%a,1!" NEQ "" ( 
+			if "!_string:~%%a,1!" NEQ "" (
 				set /a "_strlen+=%%a"
 				set "_string=!_string:~%%a!"
 			)
 		)
 	)
-	( 
+	(
 		endlocal
 		set "%~2=%_strlen%"
 		exit /b
 	)
-	
+
 :filesquestion
 	rem
 	rem The Steadier State files were not found in the same location as
@@ -219,7 +219,7 @@
 	echo and press Enter; again, to stop this program just type 'end'
 	set /p _srspath=without quotes and press Enter to exit.
 	if '%_srspath%'=='end' goto :end
-	
+
 :filescheck
 	rem
 	rem Make sure all of the necessary Steadier State files are present
@@ -270,7 +270,7 @@
 	echo.
 	echo %_filemissing% not found in %_srspath%.
 	goto :filesquestion
-	
+
 :usbquestion
 	rem
 	rem Need user input about whether to create an USB
@@ -326,7 +326,7 @@
 	set _makeusb=false
 	echo.
 	echo Okay, no need to create a bootable USB stick.
-	
+
 :isoquestion
 	rem
 	rem Need user input about whether to create an ISO
@@ -444,7 +444,7 @@
 	echo Buildpe started.  This may take about five to ten minutes.
 	echo If this fails, look in %_logdir% for detailed output and logs
 	echo of each stage of the process.
-	
+
 :setenv
 	rem
 	rem Create WinPE workspace and ADK path stuff
@@ -465,7 +465,7 @@
 	echo ========================= OUTPUT ENDS =========================
 	goto :badend
 	popd
-	
+
 :prepareenv
 	rem
 	rem Cleanup any previous mount points and then mount boot.wim
@@ -510,7 +510,7 @@
 	echo ========================= OUTPUT ENDS =========================
 	goto :baddism
 	popd
-	
+
 :mountwim
 	rem
 	rem Mount boot.wim in the created folder
@@ -531,7 +531,7 @@
 	echo ============== ERROR: Dism mount attempt failed ===============
 	echo.
 	echo The answer may simply be an incompletely dismounted previous run
-	echo and in that case a simple reboot may clear things up. Here's the 
+	echo and in that case a simple reboot may clear things up. Here's the
 	echo output from the attempted mount:
 	echo ======================== OUTPUT STARTS ========================
 	type %_logdir%\04mountwim.txt
@@ -578,7 +578,7 @@
 	echo @echo Windows 7, 8, 8.1 and 10. The source can be found at >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
 	echo @echo https://github.com/7heMC/SteadierState >> "%_buildpepath%\mount\windows\system32\startnet.cmd"
 	echo Copied Steadier State files. >>%_logdir%\startlog.txt
-	
+
 :unmountwim
 	rem
 	rem Unmount the image and commit the changes
@@ -598,7 +598,7 @@
 	echo ============= ERROR: Dism unmount attempt failed ==============
 	echo.
 	echo The answer may simply be an incompletely dismounted previous run
-	echo and in that case a simple reboot may clear things up. Here's the 
+	echo and in that case a simple reboot may clear things up. Here's the
 	echo output from the attempted mount:
 	echo ======================== OUTPUT STARTS ========================
 	type %_logdir%\05unmount.txt
@@ -672,7 +672,7 @@
 		goto :badend
 	)
 	goto :goodend
-	
+
 :goodend
 	rem
 	rem buildpe.cmd completed successfully
@@ -706,7 +706,7 @@
 	echo Forcing dism to unmount and clean any mount points
 	Dism /Unmount-Image /MountDir:%_buildpepath%\mount /discard >%_logdir%\08baddism.txt
 	Dism /Cleanup-Mountpoints >>%_logdir%\08baddism.txt
-	
+
 :badend
 	rem
 	rem Something failed
