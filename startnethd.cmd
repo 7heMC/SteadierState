@@ -6,7 +6,7 @@ wpeinit
 	set "_strletters=C D E F G H I J K L M N O P Q R S T U V W Y Z"
 	rem
 	rem As we're (1) booting WinPE and (2) booting from a hard
-	rem disk image rather than a RAMdisk, we can be sure that 
+	rem disk image rather than a RAMdisk, we can be sure that
 	rem the System Reserved partition -- which contains WinPE --
 	rem is running as X:.
 	rem Use the drive letter %_actdrive% to stop people from running the
@@ -254,7 +254,7 @@ wpeinit
 	rem
 	rem If _noimage=false AND _nosnap=false AND _noauto=false, do auto rollback
 	rem
-	if %_noimage%%_nosnap%%_noauto%%_automerge%==falsefalsefalsefalse goto :autoroll 
+	if %_noimage%%_nosnap%%_noauto%%_automerge%==falsefalsefalsefalse goto :autoroll
 	rem
 	rem If _noimage=true, show "next step" message and return to prompt, as
 	rem the user's in the middle of getting things going.
@@ -384,7 +384,7 @@ wpeinit
 	rem User chose to merge snapshot.vhd into image.vhd
 	rem
 	echo.
-	echo Warning: This will merge whatever's in your current snapshot 
+	echo Warning: This will merge whatever's in your current snapshot
 	echo (snapshot.vhd) into your base image (image.vhd) file on this
 	echo computer. This change isn't reversible, so I'm just double-
 	echo checking to see that you mean it. Please enter 'y' and press
