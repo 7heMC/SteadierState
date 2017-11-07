@@ -22,7 +22,7 @@
 	rem    that to enable the possibility of making a user's computer
 	rem    "rollback-able."  The idea is that you can have the user
 	rem    reimage his/her machine by just booting the system.
-	rem 
+	rem
 	rem RESULT:
 	rem In just a few minutes, depending on hardware capabilities, with
 	rem no user interaction, the system would be rolled back and
@@ -31,8 +31,8 @@
 	rem As a result, when you want to "reimage" a an employee's system
 	rem back to your starting point -- image.vhd -- you need only say to
 	rem employee, "please reboot the computer.
-	rem Note on auto-reboot:  if you want rollback NOT to automatically 
-	rem reboot, just create a file named "noauto.txt" in the \srs 
+	rem Note on auto-reboot:  if you want rollback NOT to automatically
+	rem reboot, just create a file named "noauto.txt" in the \srs
 	rem folder, or in the root of any drive.
 	rem
 	rem REQUIREMENTS:
@@ -50,8 +50,7 @@
 	rem 7) Thus far I'm assuming that image.vhd is on %_phydrive%.
 	rem    %_phydrive% should point to the drive where image.vhd exists
 	rem    as indicated by the :vhdcheck subroutine in startnet.cmd
-	
-	
+
 :setup
 	setlocal enabledelayedexpansion
 	rem
@@ -69,7 +68,7 @@
 	echo Creating snapshot.vhd from image.vhd
 	echo create vdisk file="%_phydrive%\snapshot.vhd" parent="%_phydrive%\image.vhd" >%_actdrive%\makesnapshot.txt
 	echo exit >>%_actdrive%\makesnapshot.txt
-	diskpart /s %_actdrive%\makesnapshot.txt 
+	diskpart /s %_actdrive%\makesnapshot.txt
 	set _phydriverc=%errorlevel%
 	if %_phydriverc%==0 (
 		echo.
@@ -129,7 +128,7 @@
 		bcdedit %_bcdstore% /set !_guid! path %_winload% >nul
 		bcdedit %_bcdstore% /set !_guid! inherit {bootloadersettings} >nul
 		bcdedit %_bcdstore% /set !_guid! recoveryenabled no >nul
-		bcdedit %_bcdstore% /set !_guid! systemroot \windows	 >nul	
+		bcdedit %_bcdstore% /set !_guid! systemroot \windows	 >nul
 		bcdedit %_bcdstore% /set !_guid! nx OptIn >nul
 		bcdedit %_bcdstore% /set !_guid! detecthal yes >nul
 		bcdedit %_bcdstore% /displayorder !_guid! /addlast >nul
@@ -151,7 +150,7 @@
 		bcdedit %_bcdstore% /set !_guid! path %_winload%
 		bcdedit %_bcdstore% /set !_guid! inherit {bootloadersettings}
 		bcdedit %_bcdstore% /set !_guid! recoveryenabled no
-		bcdedit %_bcdstore% /set !_guid! systemroot \windows	
+		bcdedit %_bcdstore% /set !_guid! systemroot \windows
 		bcdedit %_bcdstore% /set !_guid! nx OptIn
 		bcdedit %_bcdstore% /set !_guid! detecthal yes
 		bcdedit %_bcdstore% /displayorder !_guid! /addlast
