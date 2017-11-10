@@ -23,7 +23,7 @@
 	echo named prepnewpc.cmd
 	echo.
 	echo That'll take a while, but when it's done, the vhd file will be
-	echo moved from the external drive to your C: drive. Once you've got
+	echo copied from the external drive to your C: drive. Once you've got
 	echo that image.vhd on the C: drive you can boot a system to get it
 	echo ready to be able to use that VHD.  You can do it by simply
 	echo restarting your computer.
@@ -101,7 +101,7 @@
 		goto :extdrivequestion
 	)
 	if not exist %_extdrive%\scratch mkdir %_extdrive%\scratch
-		
+
 :warnings
 	rem
 	rem Warn about data loss and give outline of the remaining steps
@@ -141,7 +141,7 @@
 	echo.
 	echo For this command file to work, you must run this from a WinPE-
 	echo equipped USB stick or DVD created with the BUILDPE.CMD command
-	echo file that accompanied this file. 
+	echo file that accompanied this file.
 	echo.
 	echo If you ARE sure that you want to wipe drive 0 clean and install
 	echo a WinPE-equipped Windows boot manager and partition then please
@@ -252,6 +252,7 @@
 	if %_firmware%==uefi echo convert gpt >>%_actdrive%\makesrs.txt
 	echo create partition primary size=1000 >>%_actdrive%\makesrs.txt
 	echo format quick fs=ntfs label="SrS_Tools" >>%_actdrive%\makesrs.txt
+	echo active >>%_actdrive%\makesrs.txt
 	echo assign letter=%_srsdrive% >>%_actdrive%\makesrs.txt
 	if %_firmware%==uefi echo set id="de94bba4-06d1-4d40-a16a-bfd50179d6ac" >>%_actdrive%\makesrs.txt
 	if %_firmware%==uefi echo gpt attributes=0x8000000000000001 >>%_actdrive%\makesrs.txt
@@ -471,7 +472,7 @@
 
 :copyvhd
 	rem
-	rem Move the vhd on to the %_phydrive% drive
+	rem Copy the vhd on to the %_phydrive% drive
 	rem
 	echo.
 	echo Using Robocopy to copy the image.vhd file located in
@@ -485,7 +486,7 @@
 	)
 	echo.
 	echo ERROR: Robocopy failed with return code %copyvhdrc%. Can't
-	echo continue without moving the vhd. Please check the logs and try
+	echo continue without copying the vhd. Please check the logs and try
 	echo again.
 	goto :badend
 
@@ -618,13 +619,13 @@
 	)
 	echo on
 	bcdedit %_bcdstore% /set %_guid% osdevice partition=%_srsdrive%
-	bcdedit %_bcdstore% /set %_guid% device partition=%_srsdrive% 
+	bcdedit %_bcdstore% /set %_guid% device partition=%_srsdrive%
 	bcdedit %_bcdstore% /set %_guid% path %_winload%
 	bcdedit %_bcdstore% /set %_guid% systemroot \windows
 	bcdedit %_bcdstore% /set %_guid% winpe yes
-	bcdedit %_bcdstore% /set %_guid% detecthal yes 
+	bcdedit %_bcdstore% /set %_guid% detecthal yes
 	bcdedit %_bcdstore% /displayorder %_guid% /addlast
-	bcdedit %_bcdstore% /timeout 1 
+	bcdedit %_bcdstore% /timeout 1
 	@echo off
 	for /f "delims=" %%a in ('bcdedit %_bcdstore% /enum /v') do (
 		for /f "tokens=1,2" %%b in ('echo %%a') do (
@@ -686,7 +687,7 @@
 	echo in the documentation, and run prepnewpc.cmd from that USB/DVD.
 	echo.
 	goto :end
-	
+
 :goodend
 	rem
 	rem Success
@@ -706,13 +707,13 @@
 	echo partition. The SRS tools partition will create your first
 	echo snapshot file AND reboot so that you can start using Windows
 	echo with Steadier State. (Don't worry when it does a little work
-	echo and then reboots.)  
+	echo and then reboots.)
 	echo.
 	echo If you plan to modify the image further before final
 	echo deployment, then take a look in the documentation about using
 	echo the "merge" command.
 	echo.
-	echo I hope you find this useful! 
+	echo I hope you find this useful!
 	echo -- Mark Minasi help@minasi.com www.steadierstate.com
 	goto :end
 

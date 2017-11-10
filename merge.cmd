@@ -6,7 +6,7 @@
 	rem Merges files snapshot.vhd and image.vhd into image.vhd Here are
 	rem the detailed steps.
 	rem 1) Gets information about the existence of image.vhd and
-	rem 	snapshot.vhd from startnet
+	rem	snapshot.vhd from startnet
 	rem 2) Merges the two files
 	rem 3) Deletes the old snapshot.vhd
 	rem 4) Creates a new empty snapshot.vhd -- no BCD work required.
@@ -30,7 +30,7 @@
 	echo.
 	echo Deleting unneeded files
 	if exist mergesnaps.txt del mergesnaps.txt
-	
+
 :mergesnapshot
 	rem
 	rem Merge snapshot.vhd into image.vhd
@@ -40,9 +40,9 @@
 	echo select vdisk file="%_phydrive%\snapshot.vhd" >mergesnaps.txt
 	echo merge vdisk depth=1 >>mergesnaps.txt
 	echo exit >>mergesnaps.txt
-	diskpart /s mergesnaps.txt 
+	diskpart /s mergesnaps.txt
 	del mergesnaps.txt
-	
+
 :deletesnapshot
 	echo.
 	echo Deleting old snapshot...
@@ -57,7 +57,7 @@
 	del makesnapshot.txt
 	echo create vdisk file="%_phydrive%\snapshot.vhd" parent="%_phydrive%\image.vhd" > makesnapshot.txt
 	echo exit >>makesnapshot.txt
-	diskpart /s makesnapshot.txt 
+	diskpart /s makesnapshot.txt
 	del makesnapshot.txt
 
 :bcdcheck
