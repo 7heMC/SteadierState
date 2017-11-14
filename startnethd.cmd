@@ -23,7 +23,8 @@ wpeinit
 		goto :notwinpe
 	)
 	set path=%path%X:\srs;
-	echo Windows PE 3.0 booted from local hard drive.
+	echo Booted from local install of Windows PE.
+	ver
 
 :bioscheck
 	rem
