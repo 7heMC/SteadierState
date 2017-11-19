@@ -553,6 +553,10 @@
 	copy %_srspath%\prepnewpc.cmd %_buildpepath%\mount /y >nul
 	copy %_srspath%\rollback.cmd %_buildpepath%\mount\srs /y >nul
 	copy %_srspath%\startnethd.cmd %_buildpepath%\mount /y >nul
+	md %_buildpepath%\mount\srs\hooks >nul
+	copy %_srspath%\hooks\*.cmd %_buildpepath%\mount\srs\hooks /y >nul
+	md %_buildpepath%\mount\srs\hooks-samples >nul
+	copy %_srspath%\hooks-samples\*.cmd %_buildpepath%\mount\srs\hooks-samples /y >nul
 	rem
 	rem different WinPE to differentiate if you booted USB or hard disk
 	rem
