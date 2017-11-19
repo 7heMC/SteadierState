@@ -30,6 +30,21 @@
 	echo don't care about hiding the Physical Drive.
 	goto :badend
 
+:runhooks
+	echo Attempting to run hooks...
+	set hookinfo=false
+	for %%i in (hooks\*) do (
+		set hookinfo=true
+		echo Attempting to run hook %%i
+		call %%i
+		echo Completed attemmpt on hook %%i.
+	)
+	if %hookinfo%==false (
+		echo No hooks were found for running.
+	) else (
+		echo ...done running hooks.
+	)
+
 :bcdtask
 	rem
 	rem Create the task to change boot order and run the command
