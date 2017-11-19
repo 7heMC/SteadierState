@@ -254,7 +254,6 @@
 		set _filemissing=rollback.cmd
 		goto :filemissing
 	)
-	)
 	if not exist %_srspath%\startnethd.cmd (
 		set _filemissing=startnethd.cmd
 		goto :filemissing
