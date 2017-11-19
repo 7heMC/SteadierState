@@ -222,7 +222,7 @@
 
 :filescheck
 	rem
-	rem Make sure all of the necessary Steadier State files are present
+	rem Make sure all of the necessary Steadier State components are present
 	rem
 	echo.
 	echo Checking for the files in folder "%_srspath%"...
@@ -256,6 +256,14 @@
 	)
 	if not exist %_srspath%\startnethd.cmd (
 		set _filemissing=startnethd.cmd
+		goto :filemissing
+	)
+	if not exist %_srspath%\hooks (
+		set _filemissing=hooks folder
+		goto :filemissing
+	)
+	if not exist %_srspath%\hooks-samples (
+		set _filemissing=hooks-samples folder
 		goto :filemissing
 	)
 	goto :usbquestion
