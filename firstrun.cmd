@@ -21,7 +21,7 @@
 			echo The Physical Drive Partition was automatically assigned a drive
 			echo letter and is using %%b:
 			set _phydrive=%%b
-			goto :bcdtask
+			goto :runhooks
 		)
 	)
 	echo.
@@ -44,17 +44,6 @@
 	) else (
 		echo ...done running hooks.
 	)
-
-:bcdtask
-	rem
-	rem Create the task to change boot order and run the command
-	rem
-	echo.
-	echo Creating a task to change the boot order upon restart
-	echo Whenever Windows reboots, it will automatically rollback
-	echo and create a new snapshot
-	schtasks /Create /RU "NT AUTHORITY\SYSTEM" /SC ONSTART /TN bcddefault /TR %systemdrive%\srs\bcddefault.cmd /F
-	call %systemdrive%\srs\bcddefault.cmd
 
 :restarttasks
 	rem
