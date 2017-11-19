@@ -3,7 +3,7 @@
 :setup
 	setlocal
 
-:bcdtask
+:rollback
 	rem
 	rem Create the task to change boot order and run the command
 	rem
