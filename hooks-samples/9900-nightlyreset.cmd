@@ -30,7 +30,7 @@
 	rem Something failed
 	rem
 	echo.
-	echo Please check the logs and documentation, which might help you
+	echo Please check the hook output and documentation, which might help you
 	echo figure out what went wrong.
 
 :end
