@@ -16,7 +16,7 @@
 	rem First set set a local variable to hold the drive letter passed
 	set _phydrivepassed=%1
 	echo.
-	echo Attempting to set some security on \srs and %_phydrivepassed%\srsdirectives folders and files.
+	echo Attempting to set some security on \srs and %_phydrivepassed%:\srsdirectives folders and files.
 	rem We can assume that the srs folder is on same drive as we are running from
 	echo Dropping inheritance on \srs folder...
 	icacls \srs /inheritance:d
@@ -25,22 +25,22 @@
 	echo Dropping access for Users on \srs folder...
 	icacls \srs /remove "Users"
 	echo.
-	if exist %_phydrivepassed%\srsdirectives (
-		echo %_phydrivepassed%\srsdirectives already exists.
+	if exist %_phydrivepassed%:\srsdirectives (
+		echo %_phydrivepassed%:\srsdirectives already exists.
 	) else (
-		echo Attempting to make the %_phydrivepassed%\srsdirectives directory.
-		md %_phydrivepassed%\srsdirectives
+		echo Attempting to make the %_phydrivepassed%:\srsdirectives directory.
+		md %_phydrivepassed%:\srsdirectives
 	)
 	echo.
-	if exist %_phydrivepassed%\srsdirectives (
-		echo Dropping inheritance on %_phydrivepassed%\srsdirectives folder...
-		icacls %_phydrivepassed%\srsdirectives /inheritance:d
-		echo Dropping access for Authenticated Users group on %_phydrivepassed%\srsdirectives folder...
-		icacls %_phydrivepassed%\srsdirectives /remove "Authenticated Users"
-		echo Dropping access for Users on %_phydrivepassed%\srsdirectives folder...
-		icacls %_phydrivepassed%\srsdirectives /remove "Users"
+	if exist %_phydrivepassed%:\srsdirectives (
+		echo Dropping inheritance on %_phydrivepassed%:\srsdirectives folder...
+		icacls %_phydrivepassed%:\srsdirectives /inheritance:d
+		echo Dropping access for Authenticated Users group on %_phydrivepassed%:\srsdirectives folder...
+		icacls %_phydrivepassed%:\srsdirectives /remove "Authenticated Users"
+		echo Dropping access for Users on %_phydrivepassed%:\srsdirectives folder...
+		icacls %_phydrivepassed%:\srsdirectives /remove "Users"
 	) else (
-		echo The %_phydrivepassed%\srsdirectives folder does not exist to assign permission.
+		echo The %_phydrivepassed%:\srsdirectives folder does not exist to assign permission.
 		goto :badend
 	)
 
