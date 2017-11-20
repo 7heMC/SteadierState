@@ -13,7 +13,7 @@
 	echo.
 	echo Creating nightlymerge.cmd
 	echo. > %systemdrive%\srs\automerge.txt
-	echo copy %systemdrive%\srs\automerge.txt %_phydrive%:\ > %systemdrive%\srs\nightlymerge.cmd
+	echo copy %systemdrive%\srs\automerge.txt %_phydrive%:\srsdirectives > %systemdrive%\srs\nightlymerge.cmd
 	echo shutdown /r /t 0 >> %systemdrive%\srs\nightlymerge.cmd
 	echo.
 	echo Creating a few tasks to reboot the computer every night
