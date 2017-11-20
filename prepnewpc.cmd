@@ -676,7 +676,7 @@
 	mkdir %_vhddrive%\srs\hooks
 	copy %_actdrive%\srs\hooks\* %_vhddrive%\srs\hooks /y
 	mkdir %_vhddrive%\srs\hooks-samples
-	copy %_actdrive%\srs\hooks\hooks-samples\* %_vhddrive%\srs\hooks-samples /y
+	copy %_actdrive%\srs\hooks-samples\* %_vhddrive%\srs\hooks-samples /y
 	goto :goodend
 
 :notwinpe
