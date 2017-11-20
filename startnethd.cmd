@@ -233,13 +233,13 @@ wpeinit
 	set _automerge=false
 	set _noauto=false
 	for /f "tokens=3" %%a in ('diskpart /s %_actdrive%\srs\listvolume.txt') do (
-		if exist %%a:\srsdirective\automerge.txt (
+		if exist %%a:\srsdirectives\automerge.txt (
 			set _automerge=true
-			set _amfile=%%a:\srsdirective\automerge.txt
+			set _amfile=%%a:\srsdirectives\automerge.txt
 		)
-		if exist %%a:\srsdirective\noauto.txt (
+		if exist %%a:\srsdirectives\noauto.txt (
 			set _noauto=true
-			set _noafile=%%a:\srsdirective\noauto.txt
+			set _noafile=%%a:\srsdirectives\noauto.txt
 		)
 	)
 
