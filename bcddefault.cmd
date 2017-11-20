@@ -19,7 +19,6 @@
 				del %systemdrive%\srs\temp.txt 2>nul
 				if not !total!==0 (
 					bcdedit /default !guid!
-					bcdedit /timeout 1
 				)
 			)
 		)
