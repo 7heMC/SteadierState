@@ -35,8 +35,9 @@
 	set hookinfo=false
 	for %%i in (hooks\*) do (
 		set hookinfo=true
+		rem Now passing the _phydrive letter to the hooks
 		echo Attempting to run hook %%i
-		call %%i
+		call %%i %%_phydrive%%:
 		echo Completed attemmpt on hook %%i.
 	)
 	if %hookinfo%==false (
