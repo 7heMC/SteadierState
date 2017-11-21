@@ -21,7 +21,7 @@
 			echo The Physical Drive Partition was automatically assigned a drive
 			echo letter and is using %%b:
 			set _phydrive=%%b
-			goto :runhooks
+			goto :bcdtask
 		)
 	)
 	echo.
@@ -29,6 +29,14 @@
 	echo this so I've got to exit. You can disregard this message if you
 	echo don't care about hiding the Physical Drive.
 	goto :badend
+
+:bcdtask
+	rem
+	rem Change the boot order for the first reboot after firstrun.cmd
+	rem
+	echo.
+	echo Changing the boot order for the next reboot
+	call %systemdrive%\srs\bcddefault.cmd
 
 :runhooks
 	echo Attempting to run hooks...
