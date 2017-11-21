@@ -75,7 +75,7 @@
 	echo What is the local drive with Windows folder on it that we'll be
 	echo imaging. This process does not sysprep, that's up to you. Your
 	echo response should include a colon (probably C:). Type 'end' to
-	set /p _imgdrive=quit.
+	set /p _imgdrive=quit. 
 	if '%_imgdrive%'=='end' goto :end
 	if '%_imgdrive%'=='' (
 		echo.
@@ -101,7 +101,7 @@
 	echo root of a drive you can simply enter the drive letter with a
 	echo colon. If you would like to store it in a directory please
 	echo enter the path. For example, E:\images
-	set /p _extdrive=What is your response?
+	set /p _extdrive=What is your response? 
 	set _extdriveletter=%_extdrive:~0,2%
 	if '%_extdrive%'=='end' goto :end
 	if '%_extdrive%'=='' (
@@ -137,7 +137,7 @@
 	echo at least 2.5 times the image.vhd maximum size. For example, if
 	echo the maximum size is 80GB then the external drive would need to
 	echo be 200GB. (80GB x 2.5 = 200GB.)
-	set /p _vhdsize=Please enter just the number.
+	set /p _vhdsize=Please enter just the number. 
 	if '%_vhdsize%'=='end' goto :end
 	if '%_vhdsize%'=='' (
 		echo.
@@ -200,7 +200,7 @@
 	echo	Maximum "image.vhd" size=%_vhdsize%GB.
 	echo Additionally, I will use drive %_vhddrive%: to mount the vhd.
 	echo.
-	set /p _confirm=Type 'y' and Enter to continue. Anything else to cancel.
+	set /p _confirm=Type 'y' and Enter to continue. Anything else to cancel. 
 	if not '%_confirm%'=='y' goto :end
 
 :capturewim
