@@ -120,7 +120,7 @@
 		echo different location.
 		goto :extdrivequestion
 	)
-	if not exist %_extdrive%\scratch mkdir %_extdrive%\scratch
+	if not exist %_extdrive%\scratch md %_extdrive%\scratch
 
 :vhdsizequestion
 	rem

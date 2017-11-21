@@ -72,7 +72,7 @@
 	set _logdir=%systemroot%\logs\buildpelogs
 	set _buildpepath=%temp%\BuildPE
 	set _adkcheckcount=0
-	if not exist %systemdrive%\srs mkdir %systemdrive%\srs
+	if not exist %systemdrive%\srs md %systemdrive%\srs
 
 :admincheck
 	rem

@@ -100,7 +100,7 @@
 		echo again.
 		goto :extdrivequestion
 	)
-	if not exist %_extdrive%\scratch mkdir %_extdrive%\scratch
+	if not exist %_extdrive%\scratch md %_extdrive%\scratch
 
 :warnings
 	rem
@@ -669,13 +669,13 @@
 	rem
 	rem and the necessary files for the vhd
 	rem
-	mkdir %_vhddrive%\srs
+	md %_vhddrive%\srs
 	copy %_actdrive%\srs\bcddefault.cmd %_vhddrive%\srs /y
 	copy %_actdrive%\srs\firstrun.cmd %_vhddrive%\srs /y
 	copy %_actdrive%\srs\listvolume.txt %_vhddrive%\srs\listvolume.txt
-	mkdir %_vhddrive%\srs\hooks
+	md %_vhddrive%\srs\hooks
 	copy %_actdrive%\srs\hooks\* %_vhddrive%\srs\hooks /y
-	mkdir %_vhddrive%\srs\hooks-samples
+	md %_vhddrive%\srs\hooks-samples
 	copy %_actdrive%\srs\hooks-samples\* %_vhddrive%\srs\hooks-samples /y
 	goto :goodend
 
