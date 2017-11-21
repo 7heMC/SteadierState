@@ -90,7 +90,7 @@
 	echo can simply enter the drive letter with a colon. If it is stored
 	echo in a directory please enter the path. For example, E:\images.
 	echo You can also type 'end' to quit.
-	set /p _extdrive=What is your response?
+	set /p _extdrive=What is your response? 
 	if '%_extdrive%'=='end' goto :end
 	if '%_extdrive%'=='' (
 		echo.
@@ -150,7 +150,7 @@
 	echo with a "w.") Or type anything else and press Enter to stop the
 	echo process.
 	echo.
-	set /p _wiperesponse=Please type the word in lowercase and press Enter.
+	set /p _wiperesponse=Please type the word in lowercase and press Enter. 
 	echo.
 	if not %_wiperesponse%==wipe goto :goodend
 
