@@ -161,7 +161,6 @@
 		set _volletter=%%a
 		set _volletter=!_volletter:~0,1!
 		call set _strletters=%%_strletters:!_volletter! =%%
-		)
 	)
 	for %%a in (%_strletters%) do (
 		if not exist %%a:\ (
