@@ -90,7 +90,7 @@
 	echo can simply enter the drive letter with a colon. If it is stored
 	echo in a directory please enter the path. For example, E:\images.
 	echo You can also type 'end' to quit.
-	set /p _extdrive=What is your response?
+	set /p _extdrive=What is your response? 
 	if '%_extdrive%'=='end' goto :end
 	if '%_extdrive%'=='' (
 		echo.
@@ -100,7 +100,7 @@
 		echo again.
 		goto :extdrivequestion
 	)
-	if not exist %_extdrive%\scratch mkdir %_extdrive%\scratch
+	if not exist %_extdrive%\scratch md %_extdrive%\scratch
 
 :warnings
 	rem
@@ -150,7 +150,7 @@
 	echo with a "w.") Or type anything else and press Enter to stop the
 	echo process.
 	echo.
-	set /p _wiperesponse=Please type the word in lowercase and press Enter.
+	set /p _wiperesponse=Please type the word in lowercase and press Enter. 
 	echo.
 	if not %_wiperesponse%==wipe goto :goodend
 
@@ -669,13 +669,13 @@
 	rem
 	rem and the necessary files for the vhd
 	rem
-	mkdir %_vhddrive%\srs
+	md %_vhddrive%\srs
 	copy %_actdrive%\srs\bcddefault.cmd %_vhddrive%\srs /y
 	copy %_actdrive%\srs\firstrun.cmd %_vhddrive%\srs /y
 	copy %_actdrive%\srs\listvolume.txt %_vhddrive%\srs\listvolume.txt
-	mkdir %_vhddrive%\srs\hooks
+	md %_vhddrive%\srs\hooks
 	copy %_actdrive%\srs\hooks\* %_vhddrive%\srs\hooks /y
-	mkdir %_vhddrive%\srs\hooks-samples
+	md %_vhddrive%\srs\hooks-samples
 	copy %_actdrive%\srs\hooks-samples\* %_vhddrive%\srs\hooks-samples /y
 	goto :goodend
 

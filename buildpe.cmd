@@ -72,7 +72,7 @@
 	set _logdir=%systemroot%\logs\buildpelogs
 	set _buildpepath=%temp%\BuildPE
 	set _adkcheckcount=0
-	if not exist %systemdrive%\srs mkdir %systemdrive%\srs
+	if not exist %systemdrive%\srs md %systemdrive%\srs
 
 :admincheck
 	rem
@@ -134,7 +134,7 @@
 	echo file with the ADK's alternate location. Would you like to
 	echo download and install the current Windows ADK? This could take
 	echo well over 30 minutes. Type 'y' and press Enter if you do or
-	set /p _adkresp=anything else if you do not.
+	set /p _adkresp=anything else if you do not. 
 	if '%_adkresp%'=='y' goto :adkinstall
 	goto :badend
 
@@ -217,7 +217,7 @@
 	echo listvolume.txt, merge.cmd, prepnewpc.cmd,
 	echo rollback.cmd, startnethd.cmd. Please enter the folder name here
 	echo and press Enter; again, to stop this program just type 'end'
-	set /p _srspath=without quotes and press Enter to exit.
+	set /p _srspath=without quotes and press Enter to exit. 
 	if '%_srspath%'=='end' goto :end
 
 :filescheck
@@ -291,8 +291,8 @@
 	echo.
 	echo     REMINDER: I'M GOING TO WIPE THAT DEVICE CLEAN!!!
 	echo.
-	echo Type "y"  (without the quotes) to set up a USB stick.  Enter anything 
-	set /p _usbresp=else to NOT create a USB stick, or "end" to end this program.
+	echo Type "y"  (without the quotes) to set up a USB stick. Enter anything
+	set /p _usbresp=else to NOT create a USB stick, or "end" to end this program. 
 	echo.
 	if '%_usbresp%'=='end' goto :end
 	if not '%_usbresp%'=='y' goto :nousbstick
@@ -300,7 +300,7 @@
 	echo Ok, here is the list of current volumes on your computer.
 	for /f "delims={}" %%a in ('diskpart /s %_srspath%\listvolume.txt') do (echo %%a)
 	echo What is that USB stick's drive letter? Enter just its drive
-	set /p _usbdrive=letter, don't add a colon ":" after it. Then press Enter.
+	set /p _usbdrive=letter, don't add a colon ":" after it. Then press Enter. 
 	if '%_usbdrive%'=='end' goto :end
 	if '%_usbdrive%'=='' (
 		echo.
@@ -349,7 +349,7 @@
 	echo will be useful in situations where you don't have a USB stick
 	echo or perhaps one might not work.  To create the ISO, please type
 	echo 'y' and press Enter. Type anything else to skip making the ISO
-	set /p _isoresp=file.
+	set /p _isoresp=file. 
 	if '%_isoresp%'=='end' goto :end
 	if not '%_isoresp%'=='y' goto :noiso
 	set _makeiso=true
@@ -390,7 +390,7 @@
 	echo Will you be putting this on a machine with the same
 	echo architecture? If so, you can simply type 'y' and press Enter.
 	echo Otherwise type either "32" or "64" and press Enter.
-	set /p _archresp=Your response?
+	set /p _archresp=Your response? 
 	if '%_archresp%'=='end' goto :end
 	if '%_archresp%'=='y' goto :confirm
 	if '%_archresp%'=='32' (
@@ -445,7 +445,7 @@
 	echo.
 	echo.
 	echo Please press 'y' and Enter to confirm that you want to
-	set /p _confirmresp=do this, or anything else and Enter to stop.
+	set /p _confirmresp=do this, or anything else and Enter to stop. 
 	if not '%_confirmresp%'=='y' goto :badend
 	echo.
 	echo Buildpe started.  This may take about five to ten minutes.

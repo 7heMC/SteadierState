@@ -347,7 +347,7 @@ wpeinit
 	echo 'merge' and hit enter.
 	echo.
 	echo Type anything else to exit this script and use the command prompt.
-	set /p _response=What is your answer?
+	set /p _response=What is your answer? 
 	if '%_response%'=='' goto :end
 	if %_response%==merge goto :merge
 	if %_response%==rollback goto :rollback
