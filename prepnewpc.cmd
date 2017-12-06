@@ -673,6 +673,10 @@
 	copy %_actdrive%\srs\bcddefault.cmd %_vhddrive%\srs /y
 	copy %_actdrive%\srs\firstrun.cmd %_vhddrive%\srs /y
 	copy %_actdrive%\srs\listvolume.txt %_vhddrive%\srs\listvolume.txt
+	mkdir %_vhddrive%\srs\hooks
+	copy %_actdrive%\srs\hooks\* %_vhddrive%\srs\hooks /y
+	mkdir %_vhddrive%\srs\hooks-samples
+	copy %_actdrive%\srs\hooks-samples\* %_vhddrive%\srs\hooks-samples /y
 	goto :goodend
 
 :notwinpe
