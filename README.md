@@ -5,6 +5,7 @@ This is a modified version of steadier state to provide compatibility with Windo
 Essentially there are four phases in the SteadierState model and they are as follows:
 
 ### **Phase 1** -- Install and build the SteadierState live media toolchain.
+  Note: This phase requires a usb flashdrive. **Warning: All data on the usb flashdrive used with this phase will be lost!**
 
   1. Clone the SteadierState repository **or** Download and Extract zip file from the github.com repository.
   2. Open a Command Prompt window **as an Administrator**.
@@ -14,6 +15,7 @@ Essentially there are four phases in the SteadierState model and they are as fol
   6. Should something go wrong during the `buildpe.cmd` execution, follow the suggestions offered by the error message.
 
 ### **Phase 2** -- Create a SteadierState installable setup.
+  Note: This phase requires an external drive or network drive to hold deployment files.
 
   1. Boot the live media created in **Phase 1** on a PC running Windows that you wish to use as the base install for your SteadierState deployment.
   2. Initiate the creation of the SteadierState installable setup with the `cvt2chd.cmd` command. Upon running the `cvt2vhd.cmd` command you will be prompted for input to produce the everything needed for deployment.
@@ -21,6 +23,7 @@ Essentially there are four phases in the SteadierState model and they are as fol
   3. Reboot the computer by typing 'exit'
 
 ### **Phase 3** -- Deploy SteadierState to a PC.
+  Note: **Warning: This phase will erase all files on disk 0 of the target PC!**
 
   1. Boot the live media created in **Phase 1** on a PC you wish to deploy with SteadierState.
   2. Initiate the deployment of SteadierState to the PC with the `prepnewpc.cmd` command. Upon running the `prepnewpc.cmd` command you will be prompted for input for the installation of SteadierState to the PC.
