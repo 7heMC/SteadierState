@@ -79,10 +79,14 @@ SteadierState now has a new feature called first run hooks. First run hooks prov
 
   First run hooks work like this, there is now a folder called "*C:\srs\hooks\*", in this folder are commands (i.e.hooks) that are executed when the `C:\srs\firstrun.cmd` command is ran. So prior to running the `C:\srs\firstrun.cmd` command, you can provide custom instructions to be ran for your deployment environment.
 
-
 ### How do I write my own first run hook?
 
   As a starting place take a look at the hooks-samples folder for some ideas on how it works.
+
+
+### How do I install a first run hook?
+
+  Hooks are enabled by placing them in the `C:\srs\hooks` folder prior to running the `C:\srs\firstrun.cmd`.
 
 ## Operating Modes
 SteadierState with the new first run hooks model can now offer two primary "*modes*" **Rollback Mode** (the default) and **Delta Mode** which are described below.
