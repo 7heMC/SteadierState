@@ -37,7 +37,7 @@ Essentially there are four phases in the SteadierState model and they are as fol
   3. Open a Command Prompt window **as an Administrator**.
   4. In the Command Prompt window opened in **step 3.**, initiate the SteadierState rollback point with the `c:\srs\firstrun.cmd` command.
   3. Should something go wrong during the `C:\srs\firstrun.cmd` execution, follow the suggestions offered by the error message.
-  5. FIXME - Restart the computer. By default, from this point forward the computer will automatically create a new snapshot at every reboot.
+  5. Reboot the PC and the next boot should be to WindowsPE which will perform the final configurations of a snapshot.vhd and a corresponding boot entry.
 
 ## Directives
 SteadierState target PC's which have completed **Phase 4** are essentially deployment ready. There are times which admins will need to perform some type of maintenance or configuration adjustments on these deployment ready PC's. SteadierState utilizes the local install of WindowsPE and what is called **Directives** to change the default deployment configurations. There are two primary **Directives** "*noauto*" and "*automerge*". To activate **Directives** simply place a file named appropriatly ("*noauto.txt*" or "*automerge.txt*") in a directory named `\srsdirectives` on the drive containing the image.vhd and snapshot.vhd. Note: The contents of the **Directives** file does not matter only the name.
