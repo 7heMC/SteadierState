@@ -5,12 +5,13 @@
 
 :rollback
 	rem
-	rem Create the task to change boot order for WinPE rollback
+	rem Create the task to change boot order to WinPE for one of the
+	rem following directives: rollback (default), automerge.txt, or noauto.txt.
 	rem
 	echo.
-	echo Creating a task to change the boot order upon restart
-	echo Whenever Windows reboots, it will automatically rollback
-	echo and create a new snapshot
+	echo Creating a task to change the boot order upon restart.
+	echo Whenever Windows reboots, it will perform the assigned directive
+	echo of rollback, merge, or interactive mode.
 	schtasks /Create /RU "NT AUTHORITY\SYSTEM" /SC ONSTART /TN bcddefault /TR %systemdrive%\srs\bcddefault.cmd /F
 
 :goodend
