@@ -51,7 +51,7 @@ The noauto directive tells the WindowsPE install to take no automatic action. To
   4. Reboot the PC and the next boot should be to WindowsPE with the "*noauto*" directive.
 
 ### Directive "*automerge*"
-The automerge directive tells the WindowsPE install to take automerge the image.vhd and the snapshot.vhd to a new image.vhd. To enable the "*automerge*" directive perform the following steps:
+The automerge directive tells the WindowsPE install to automerge the image.vhd and the snapshot.vhd to a new image.vhd. To enable the "*automerge*" directive perform the following steps:
 
   1. Assume that D: is the drive containing the image.vhd, snapshot.vhd, and the \srsdirectives folder.
   2. Open a Command Prompt window **as an Administrator**.
