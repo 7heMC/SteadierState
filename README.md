@@ -62,13 +62,24 @@ The automerge directive tells the WindowsPE install to take automerge the image.
 ### Directive Examples
 To provide an understanding of how these **Directives** can be used please examine the following examples.
 
-#### Example: How can I upgrade my SteadierState PC running "*Rollback Mode*"?
+#### Example: How can I upgrade my SteadierState PC base image running "*Rollback Mode*"?
 
   1. Assume that D: is the drive containing the image.vhd, snapshot.vhd, and the \srsdirectives folder.
   2. Boot the PC up which will be in the pristine state of deployment.
   3. Apply the configuration adjustments desired.
   4. Open a Command Prompt window **as an Administrator**.
   5. In the Command Prompt window opened in **step 3.**, run the following command `echo > D:\srsdirectives\automerge.txt`.
+  6. Reboot the PC and the next boot should be to WindowsPE with the "*automerge*" directive.
+
+#### Example: How can I upgrade my SteadierState PC base image running "*Delta Mode*"?
+
+  1. Assume that D: is the drive containing the image.vhd, snapshot.vhd, and the \srsdirectives folder.
+  2. Boot the PC up which will be in the pristine state of deployment.
+  3. Apply the configuration adjustments desired.
+  4. Open a Command Prompt window **as an Administrator**.
+  5. In the Command Prompt window opened in **step 3.**, run the following command `echo > D:\srsdirectives\automerge.txt`.
+  6. In the Command Prompt window opened in **step 3.**, run the following command `C:\srs\bcddefault.cmd`.
+  7. Reboot the PC and the next boot should be to WindowsPE with the "*automerge*" directive.
 
 #### Example: FIXME
 
