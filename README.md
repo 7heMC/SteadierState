@@ -18,7 +18,7 @@ Essentially there are four phases in the SteadierState model and they are as fol
   Note: This phase requires an external drive or network drive to hold deployment files.
 
   1. Boot the live media created in **Phase 1** on a PC running Windows that you wish to use as the base install for your SteadierState deployment.
-  2. Initiate the creation of the SteadierState installable setup with the `cvt2chd.cmd` command. Upon running the `cvt2vhd.cmd` command you will be prompted for input to produce the everything needed for deployment.
+  2. Initiate the creation of the SteadierState installable setup with the `cvt2vhd.cmd` command. Upon running the `cvt2vhd.cmd` command you will be prompted for input to produce the everything needed for deployment.
   3. Should something go wrong during the `cvt2vhd.cmd` execution, follow the suggestions offered by the error message.
   3. Reboot the computer by typing `exit`.
 
