@@ -251,7 +251,7 @@
 	if %_firmware%==uefi echo convert gpt >>%_actdrive%\makesrs.txt
 	echo create partition primary size=1000 >>%_actdrive%\makesrs.txt
 	echo format quick fs=ntfs label="SrS_Tools" >>%_actdrive%\makesrs.txt
-	echo active >>%_actdrive%\makesrs.txt
+	if %_firmware%==bios echo active >>%_actdrive%\makesrs.txt
 	echo assign letter=%_srsdrive% >>%_actdrive%\makesrs.txt
 	if %_firmware%==uefi echo set id="de94bba4-06d1-4d40-a16a-bfd50179d6ac" >>%_actdrive%\makesrs.txt
 	if %_firmware%==uefi echo gpt attributes=0x8000000000000001 >>%_actdrive%\makesrs.txt
