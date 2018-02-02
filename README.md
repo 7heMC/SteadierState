@@ -18,7 +18,7 @@ Essentially there are four phases in the SteadierState model and they are as fol
   Note: This phase requires an external drive or network drive to hold deployment files.
 
   1. Boot the live media created in **Phase 1** on a PC running Windows that you wish to use as the base install for your SteadierState deployment.
-  2. Initiate the creation of the SteadierState installable setup with the `cvt2chd.cmd` command. Upon running the `cvt2vhd.cmd` command you will be prompted for input to produce the everything needed for deployment.
+  2. Initiate the creation of the SteadierState installable setup with the `cvt2vhd.cmd` command. Upon running the `cvt2vhd.cmd` command you will be prompted for input to produce the everything needed for deployment.
   3. Should something go wrong during the `cvt2vhd.cmd` execution, follow the suggestions offered by the error message.
   3. Reboot the computer by typing `exit`.
 
@@ -51,7 +51,7 @@ The noauto directive tells the WindowsPE install to take no automatic action. To
   4. Reboot the PC and the next boot should be to WindowsPE with the "*noauto*" directive.
 
 ### Directive "*automerge*"
-The automerge directive tells the WindowsPE install to take automerge the image.vhd and the snapshot.vhd to a new image.vhd. To enable the "*automerge*" directive perform the following steps:
+The automerge directive tells the WindowsPE install to automerge the image.vhd and the snapshot.vhd to a new image.vhd. To enable the "*automerge*" directive perform the following steps:
 
   1. Assume that D: is the drive containing the image.vhd, snapshot.vhd, and the \srsdirectives folder.
   2. Open a Command Prompt window **as an Administrator**.
@@ -62,7 +62,7 @@ The automerge directive tells the WindowsPE install to take automerge the image.
 ### Directive Examples
 To provide an understanding of how these **Directives** can be used please examine the following examples.
 
-#### Example: How can I boot my SteadierState PC to WindowsPE for diagnostics image running "*Rollback Mode*"?
+#### Example: How can I boot my SteadierState PC to WindowsPE for diagnostics image running "*Roll Back Mode*"?
 
   1. Assume that D: is the drive containing the image.vhd, snapshot.vhd, and the \srsdirectives folder.
   2. Boot the PC up which will be in the pristine state of deployment.
@@ -81,7 +81,7 @@ To provide an understanding of how these **Directives** can be used please exami
   6. In the Command Prompt window opened in **step 3.**, run the following command `C:\srs\bcddefault.cmd`.
   7. Reboot the PC and the next boot should be to WindowsPE with the "*noauto*" directive.
 
-#### Example: How can I upgrade my SteadierState PC base image running "*Rollback Mode*"?
+#### Example: How can I upgrade my SteadierState PC base image running "*Roll Back Mode*"?
 
   1. Assume that D: is the drive containing the image.vhd, snapshot.vhd, and the \srsdirectives folder.
   2. Boot the PC up which will be in the pristine state of deployment.
@@ -117,9 +117,9 @@ SteadierState now has a new feature called first run hooks. First run hooks prov
   Hooks are enabled by placing them in the `C:\srs\hooks` folder prior to running the `C:\srs\firstrun.cmd`.
 
 ## Operating Modes
-SteadierState with the new first run hooks model can now offer two primary "*modes*" **Rollback Mode** (the default) and **Delta Mode** which are described below.
+SteadierState with the new first run hooks model can now offer two primary "*modes*" **Roll Back Mode** (the default) and **Delta Mode** which are described below.
 
-### **Rollback Mode**
+### **Roll Back Mode**
   * The default deployment "*mode*" of SteadierState with the default set of first run hooks enabled when the `C:\srs\firstrun.cmd` command is ran on a target PC. Essentially this "*mode*" "*Rolls Back*" any changes that were made since the last reboot.
 
 ### **Delta Mode**
