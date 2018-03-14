@@ -46,7 +46,7 @@
 		rem Now passing the _phydrive letter to the hooks
 		echo Attempting to run hook %%i
 		call %%i %%_phydrive%%
-		echo Completed attemmpt on hook %%i.
+		echo Completed attempt on hook %%i.
 	)
 	if %hookinfo%==false (
 		echo No hooks were found for running.
