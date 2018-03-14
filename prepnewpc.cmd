@@ -145,7 +145,7 @@
 	echo.
 	echo If you ARE sure that you want to wipe drive 0 clean and install
 	echo a WinPE-equipped Windows boot manager and partition then please
-	echo type the eighth word in this paragraph and then press Enter to
+	echo type the ninth word in this paragraph and then press Enter to
 	echo start the wipe-and-rebuild process. (The 4-letter word starts
 	echo with a "w.") Or type anything else and press Enter to stop the
 	echo process.
